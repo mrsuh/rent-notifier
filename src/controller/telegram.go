@@ -16,9 +16,9 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string) bool {
 
 	fmt.Println(body)
 
-	message := model.MessageRequest{}
+	bodyRequest := model.BodyRequest{}
 
-	err := json.Unmarshal([]byte(body), &message)
+	err := json.Unmarshal([]byte(body), &bodyRequest)
 
 	if nil != err {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
@@ -27,7 +27,7 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string) bool {
 		return false
 	}
 
-	fmt.Println(message)
+	fmt.Println(bodyRequest)
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte(`{"status": "ok"}`))
@@ -35,9 +35,9 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string) bool {
 	subways := make([]int, 0)
 	subways = append(subways, 1)
 
-	recipient := dbal.Recipient{TelegramChatId: message.Chat.Id, City: 1, Subways: subways, Type: 1}
+	recipient := dbal.Recipient{TelegramChatId: bodyRequest.Message.Chat.Id, City: 1, Subways: subways, Type: 1}
 
-	model.Echo(message, token)
+	model.Echo(bodyRequest, token)
 
 	db.AddRecipient(recipient)
 

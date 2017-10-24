@@ -7,6 +7,11 @@ import (
 	"bytes"
 )
 
+type BodyRequest struct {
+	UpdateId string         `json:"update_id"`
+	Message  MessageRequest `json:"message"`
+}
+
 type MessageRequest struct {
 	Chat Chat   `json:"chat"`
 	Text string `json:"text"`
@@ -33,9 +38,9 @@ func Notify() {
 
 }
 
-func Echo(message MessageRequest, token string) {
+func Echo(bodyRequest BodyRequest, token string) {
 	//https://api.telegram.org/bot%s/%s
-	response := MessageResponse{ChatId: message.Chat.Id, Text: message.Text}
+	response := MessageResponse{ChatId: bodyRequest.Message.Chat.Id, Text: bodyRequest.Message.Text}
 
 	body, err := json.Marshal(response)
 
