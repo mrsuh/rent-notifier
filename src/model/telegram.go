@@ -3,7 +3,6 @@ package model
 import (
 	"net/http"
 	"fmt"
-	"encoding/json"
 	"bytes"
 )
 
