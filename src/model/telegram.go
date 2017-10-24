@@ -8,7 +8,7 @@ import (
 )
 
 type BodyRequest struct {
-	UpdateId string         `json:"update_id"`
+	UpdateId int         `json:"update_id"`
 	Message  MessageRequest `json:"message"`
 }
 
@@ -18,7 +18,7 @@ type MessageRequest struct {
 }
 
 type Chat struct {
-	Id string `json:"id"`
+	Id int `json:"id"`
 }
 
 type MessageResponse struct {
@@ -40,7 +40,7 @@ func Notify() {
 
 func Echo(bodyRequest BodyRequest, token string) {
 	//https://api.telegram.org/bot%s/%s
-	response := MessageResponse{ChatId: bodyRequest.Message.Chat.Id, Text: bodyRequest.Message.Text}
+	response := MessageResponse{ChatId: string(bodyRequest.Message.Chat.Id), Text: bodyRequest.Message.Text}
 
 	body, err := json.Marshal(response)
 
