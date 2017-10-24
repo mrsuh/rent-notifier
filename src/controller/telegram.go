@@ -14,6 +14,8 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string) bool {
 
 	body := string(ctx.PostBody())
 
+	fmt.Println(body)
+
 	message := model.MessageRequest{}
 
 	err := json.Unmarshal([]byte(body), &message)
