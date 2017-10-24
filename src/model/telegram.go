@@ -40,13 +40,8 @@ func Notify() {
 
 func Echo(bodyRequest BodyRequest, token string) {
 	//https://api.telegram.org/bot%s/%s
-	response := MessageResponse{ChatId: string(bodyRequest.Message.Chat.Id), Text: bodyRequest.Message.Text}
 
-	body, err := json.Marshal(response)
+	body := fmt.Sprintf(`{"chat_id": %d, "text": "%s"}`, bodyRequest.Message.Chat.Id, bodyRequest.Message.Text)
 
-	if nil != err {
-		panic(err)
-	}
-
-	http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/%s", token, "sendMessage"), "application/json", bytes.NewBuffer(body))
+	http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/%s", token, "sendMessage"), "application/json", bytes.NewBuffer([]byte(body)))
 }
