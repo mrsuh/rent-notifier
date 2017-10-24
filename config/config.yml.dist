@@ -1,0 +1,7 @@
+api.listen: '127.0.0.1:8080'
+
+telegram.listen: '127.0.0.1:8081'
+telegram.token: telegram_token
+
+database.dsn: root@/signal_db # [username[:password]@][protocol[(address)]]/dbname
+
