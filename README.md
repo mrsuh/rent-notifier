@@ -13,9 +13,9 @@ sh bin/compile.sh
 
 ## Run
 ```sh
-bin/fixture /config/config.yml /fixtures
-bin/api /config/config.yml
-bin/telegram /config/config.yml
+bin/fixture config/config.yml fixtures
+bin/api config/config.yml
+bin/telegram config/config.yml
 ```
 
 ```sh

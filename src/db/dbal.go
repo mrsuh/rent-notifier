@@ -61,6 +61,12 @@ func (dbal *DBAL) FindRecipientsByNote(note Note) []Recipient {
 	result := []Recipient{}
 	dbal.db.C("recipients").Find(bson.M{"city": note.City, "subways": bson.M{"$in": note.Subways}, "types": note.Type}).All(&result)
 
+	conditions := make([]bson.M, 0)
+	conditions = append(conditions, bson.M{"city": note.City, "subways": bson.M{"$in": note.Subways}, "types": note.Type})
+	conditions = append(conditions, bson.M{"city": note.City, "subways": bson.M{"$size": 0}, "types": note.Type})
+
+	dbal.db.C("recipients").Find(bson.M{"$or": conditions}).All(&result)
+
 	return result
 }
 
