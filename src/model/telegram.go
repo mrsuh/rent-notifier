@@ -1,46 +1,28 @@
 package model
 
 import (
-	"net/http"
 	"fmt"
 	"bytes"
+	"net/http"
 )
 
-type BodyRequest struct {
-	UpdateId int         `json:"update_id"`
-	Message  MessageRequest `json:"message"`
+type Message struct {
+	ChatId int
+	Text   string
 }
 
-type MessageRequest struct {
-	Chat Chat   `json:"chat"`
-	Text string `json:"text"`
+type Telegram struct {
+	Token string
 }
 
-type Chat struct {
-	Id int `json:"id"`
-}
+func (telegram *Telegram) SendMessage(messages chan Message) {
 
-type MessageResponse struct {
-	ChatId string `json:"chat_id"`
-	Text   string `json:"text"`
-}
+	for message := range messages {
 
-func AddRecipient() {
+		body := fmt.Sprintf(`{"chat_id": %d, "text": "%s"}`, message.ChatId, message.Text)
 
-}
+		http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/%s", telegram.Token, "sendMessage"), "application/json", bytes.NewBuffer([]byte(body)))
 
-func RemoveRecipient() {
-
-}
-
-func Notify() {
-
-}
-
-func Echo(bodyRequest BodyRequest, token string) {
-	//https://api.telegram.org/bot%s/%s
-
-	body := fmt.Sprintf(`{"chat_id": %d, "text": "%s"}`, bodyRequest.Message.Chat.Id, bodyRequest.Message.Text)
-
-	http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/%s", token, "sendMessage"), "application/json", bytes.NewBuffer([]byte(body)))
+		fmt.Println(body)
+	}
 }

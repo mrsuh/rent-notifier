@@ -1,28 +1,76 @@
 package model
 
 import (
-	"github.com/valyala/fasthttp"
-	"encoding/json"
 	"fmt"
 	"rent-notifier/src/db"
+	"strings"
+	"bytes"
 )
 
-func Parse(ctx *fasthttp.RequestCtx) {
+func FormatMessage(db *dbal.DBAL, note dbal.Note) string {
 
-	ctx.SetContentType("application/json")
-	ctx.SetStatusCode(fasthttp.StatusOK)
+	var b bytes.Buffer
 
-	note := dbal.Note{}
+	b.WriteString(formatType(note.Type))
+	b.WriteString(" за ")
+	b.WriteString(formatPrice(note.Price))
+	b.WriteString(" руб/мес")
 
-	err := json.Unmarshal([]byte(ctx.PostBody()), &note)
-
-	if nil != err {
-
+	text_subways := formatSubways(db, note)
+	if text_subways != "" {
+		b.WriteString(" около метро ")
+		b.WriteString(text_subways)
 	}
 
-	fmt.Println(note)
+	b.WriteString("\n")
+	b.WriteString(note.Description)
 
-	//notifier.Note{}
+	if len(note.Photos) != 0 {
+		b.WriteString("\n")
+		b.WriteString(strings.Join(note.Photos, "\n"))
+	}
 
-	ctx.SetBody([]byte(`{"status": "ok"}`))
+	b.WriteString("\n")
+	b.WriteString(note.Contact)
+	b.WriteString("\n")
+	b.WriteString(note.Link)
+
+	return b.String()
+}
+
+func formatType(note_type int) string {
+	type_string := "";
+	if note_type == 0 {
+		type_string = "комната";
+	} else if note_type == 1 {
+		type_string = "1 комнатная квартира";
+	} else if note_type == 2 {
+		type_string = "2 комнатная квартира";
+	} else if note_type == 3 {
+		type_string = "3 комнатная квартира";
+	} else if note_type == 4 {
+		type_string = "4+ комнатная квартира";
+	} else if note_type == 5 {
+		type_string = "студия";
+	}
+
+	return type_string;
+}
+
+func formatPrice(price int) string {
+	return fmt.Sprintf("%d", price)
+}
+
+func formatSubways(db *dbal.DBAL, note dbal.Note) string {
+
+	subways := make([]string, 0)
+	for _, subway := range db.FindSubwaysByIds(note.Subways) {
+		subways = append(subways, subway.Name)
+	}
+
+	if len(subways) == 0 {
+		return ""
+	}
+
+	return strings.Join(subways, ", ")
 }

@@ -2,14 +2,15 @@ package main
 
 import (
 	"github.com/valyala/fasthttp"
-	config "github.com/mrsuh/cli-config"
+	"github.com/mrsuh/cli-config"
 	"fmt"
 	"log"
 	"rent-notifier/src/db"
 	"rent-notifier/src/controller"
+	"rent-notifier/src/model"
 )
 
-func requestHandlerTelegram(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string) {
+func requestHandlerTelegram(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token string, messages chan model.Message) {
 	switch string(ctx.Path()) {
 	case fmt.Sprintf("/%s/webhook", token):
 
@@ -18,7 +19,11 @@ func requestHandlerTelegram(ctx *fasthttp.RequestCtx, db *dbal.DBAL, token strin
 			break
 		}
 
-		controller.Parse(ctx, db, token)
+		err := controller.Parse(ctx, db, messages)
+
+		if err != nil {
+			log.Println("error", err)
+		}
 
 		break
 	default:
@@ -40,13 +45,17 @@ func main() {
 
 	db := dbal.Connect(conf["database.dsn"].(string))
 
-	fmt.Println("server run on ", conf["telegram.listen"].(string))
+	messages := make(chan model.Message)
+	telegram := model.Telegram{Token: conf["telegram.token"].(string)}
+	go telegram.SendMessage(messages)
 
-	server_api_err := fasthttp.ListenAndServe(conf["telegram.listen"].(string), func(ctx *fasthttp.RequestCtx){
-		requestHandlerTelegram(ctx, db, conf["telegram.token"].(string))
+	fmt.Println("server telegram run on ", conf["telegram.listen"].(string))
+
+	server_telegram_err := fasthttp.ListenAndServe(conf["telegram.listen"].(string), func(ctx *fasthttp.RequestCtx) {
+		requestHandlerTelegram(ctx, db, conf["telegram.token"].(string), messages)
 	})
 
-	if server_api_err != nil {
-		log.Fatal(server_api_err)
+	if server_telegram_err != nil {
+		log.Fatal(server_telegram_err)
 	}
 }

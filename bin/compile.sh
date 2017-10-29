@@ -9,3 +9,4 @@ go get github.com/mrsuh/cli-config
 
 go build -o bin/api -i src/api.go
 go build -o bin/telegram -i src/telegram.go
+go build -o bin/fixture -i src/fixture.go

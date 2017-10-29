@@ -1,0 +1,50 @@
+-
+    id: 51
+    name: 'Алабинская'
+    regexp: 'алабинск'
+    city: 9
+-
+    id: 52
+    name: 'Российская'
+    regexp: 'российск'
+    city: 9
+-
+    id: 53
+    name: Московская
+    regexp: 'московск'
+    city: 9
+-
+    id: 54
+    name: Гагаринская
+    regexp: 'гагаринск'
+    city: 9
+-
+    id: 55
+    name: 'Спортивная'
+    regexp: 'спортивн'
+    city: 9
+-
+    id: 56
+    name: 'Советская'
+    regexp: 'советск'
+    city: 9
+-
+    id: 57
+    name: Победа
+    regexp: побед
+    city: 9
+-
+    id: 58
+    name: 'Безымянка'
+    regexp: 'безымянк'
+    city: 9
+-
+    id: 59
+    name: Кировская
+    regexp: кировск
+    city: 9
+-
+    id: 510
+    name: 'Юнгородок'
+    regexp: 'юнгород'
+    city: 9

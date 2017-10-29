@@ -5,10 +5,12 @@ import (
 	config "github.com/mrsuh/cli-config"
 	"fmt"
 	"log"
+	"rent-notifier/src/db"
+	"rent-notifier/src/model"
 	"rent-notifier/src/controller"
 )
 
-func requestHandlerApi(ctx *fasthttp.RequestCtx) {
+func requestHandlerApi(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan model.Message) {
 	switch string(ctx.Path()) {
 
 	case "/api/v1/notify":
@@ -18,7 +20,11 @@ func requestHandlerApi(ctx *fasthttp.RequestCtx) {
 			break
 		}
 
-		controller.Notify(ctx)
+		err := controller.Notify(ctx, db, messages)
+
+		if err != nil {
+			log.Println("error", err)
+		}
 
 		break
 	default:
@@ -38,9 +44,17 @@ func main() {
 
 	conf := conf_instance.Get()
 
+	db := dbal.Connect(conf["database.dsn"].(string))
+
+	messages := make(chan model.Message)
+	telegram := model.Telegram{Token: conf["telegram.token"].(string)}
+	go telegram.SendMessage(messages)
+
 	fmt.Println("server run on ", conf["api.listen"].(string))
 
-	server_api_err := fasthttp.ListenAndServe(conf["api.listen"].(string), requestHandlerApi)
+	server_api_err := fasthttp.ListenAndServe(conf["api.listen"].(string), func(ctx *fasthttp.RequestCtx) {
+		requestHandlerApi(ctx, db, messages)
+	})
 
 	if server_api_err != nil {
 		log.Fatal(server_api_err)

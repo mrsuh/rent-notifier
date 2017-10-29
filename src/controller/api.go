@@ -3,17 +3,13 @@ package controller
 import (
 	"github.com/valyala/fasthttp"
 	"encoding/json"
-	"fmt"
 	"rent-notifier/src/db"
+	"rent-notifier/src/model"
 )
 
-func Notify(ctx *fasthttp.RequestCtx) bool {
-
-	// get chat_ids by city, subway and type
-	// send notification to chat_ids by goroutine
+func Notify(ctx *fasthttp.RequestCtx, db *dbal.DBAL , messages chan model.Message) error {
 
 	ctx.SetContentType("application/json")
-	ctx.SetStatusCode(fasthttp.StatusOK)
 
 	body := string(ctx.PostBody())
 
@@ -25,13 +21,16 @@ func Notify(ctx *fasthttp.RequestCtx) bool {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		ctx.SetBody([]byte(`{"status": "err"}`))
 
-		return false
+		return err
 	}
 
-	fmt.Println(note)
+	for _, recipient := range db.FindRecipientsByNote(note) {
+		text := model.FormatMessage(db, note)
+		messages <- model.Message{ChatId: recipient.TelegramChatId, Text: text}
+	}
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte(`{"status": "ok"}`))
 
-	return true
+	return nil
 }

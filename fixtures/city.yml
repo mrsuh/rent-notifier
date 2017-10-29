@@ -1,0 +1,145 @@
+-
+    id: 1
+    name: 'Санкт Петербург'
+    regexp: 'спб|питер|петербург'
+    has_subway: true
+
+-
+    id: 2
+    short_name: moskva
+    name: 'Москва'
+    regexp: 'мск|москва'
+    has_subway: true
+
+-
+    id: 3
+    short_name: novosibirsk
+    name: 'Новосибирск'
+    regexp: 'новосиб'
+    has_subway: true
+
+-
+    id: 4
+    short_name: ekaterinburg
+    name: 'Екатеринбург'
+    regexp: 'екатеринб'
+    has_subway: true
+
+-
+    id: 5
+    short_name: nizny-novgorod
+    name: 'Нижний Новгород'
+    regexp: 'новгород'
+    has_subway: true
+
+-
+    id: 6
+    short_name: kazan
+    name: 'Казань'
+    regexp: 'казан'
+    has_subway: true
+
+-
+    id: 7
+    short_name: chelabinsk
+    name: 'Челябинск'
+    regexp: 'челябинск'
+    has_subway: false
+
+-
+    id: 8
+    short_name: omsk
+    name: 'Омск'
+    regexp: 'омск'
+    has_subway: false
+
+-
+    id: 9
+    short_name: samara
+    name: 'Самара'
+    regexp: 'самар'
+    has_subway: true
+
+-
+    id: 10
+    short_name: rostov-na-donu
+    name: 'Ростов-на-Дону'
+    regexp: 'ростов'
+    has_subway: false
+
+-
+    id: 11
+    short_name: ufa
+    name: 'Уфа'
+    regexp: 'уфа|уфе'
+    has_subway: false
+
+-
+    id: 12
+    short_name: krasnoyarsk
+    name: 'Красноярск'
+    regexp: 'красноярск'
+    has_subway: false
+
+-
+    id: 13
+    short_name: perm
+    name: 'Пермь'
+    regexp: 'перм'
+    has_subway: false
+
+-
+    id: 14
+    short_name: voronez
+    name: 'Воронеж'
+    regexp: 'воронеж'
+    has_subway: false
+
+-
+    id: 15
+    short_name: volgograd
+    name: 'Волгоград'
+    regexp: 'волгоград'
+    has_subway: false
+
+-
+    id: 16
+    short_name: krasnodar
+    name: 'Краснодар'
+    regexp: 'краснодар'
+    has_subway: false
+
+-
+    id: 17
+    short_name: saratov
+    name: 'Саратов'
+    regexp: 'саратов'
+    has_subway: false
+
+-
+    id: 18
+    short_name: tumen
+    name: 'Тюмень'
+    regexp: 'тюмен'
+    has_subway: false
+
+-
+    id: 19
+    short_name: toliatti
+    name: 'Тольятти'
+    regexp: 'тольят'
+    has_subway: false
+
+-
+    id: 20
+    short_name: taganrog
+    name: 'Таганрог'
+    regexp: 'таганрог'
+    has_subway: false
+
+-
+    id: 21
+    short_name: tobolsk
+    name: 'Тобольск'
+    regexp: 'тобольск'
+    has_subway: false

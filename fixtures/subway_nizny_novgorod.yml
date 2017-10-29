@@ -1,0 +1,155 @@
+-
+    id: 31
+    name: Сенная
+    regexp: сенная
+    city: 5
+-
+    id: 32
+    name: 'Оперный театр'
+    regexp: 'оперный.{1,3}театр'
+    city: 5
+-
+    id: 33
+    name: Горьковская
+    regexp: горьковск
+    city: 5
+-
+    id: 34
+    name: Московская
+    regexp: московск
+    city: 5
+-
+    id: 35
+    name: Чкаловская
+    regexp: чкаловск
+    city: 5
+-
+    id: 36
+    name: Ленинская
+    regexp: ленинск
+    city: 5
+-
+    id: 37
+    name: Заречная
+    regexp: заречн
+    city: 5
+-
+    id: 38
+    name: 'Двигатель Революции'
+    regexp: 'двигатель.{1,3}революции'
+    city: 5
+-
+    id: 39
+    name: Пролетарская
+    regexp: пролетарск
+    city: 5
+-
+    id: 310
+    name: Автозаводская
+    regexp: автозаводск
+    city: 5
+-
+    id: 311
+    name: Комсомольская
+    regexp: комсомольск
+    city: 5
+-
+    id: 312
+    name: Кировская
+    regexp: кировск
+    city: 5
+-
+    id: 313
+    name: 'Парк культуры'
+    regexp: 'парк(.{0,3})культуры'
+    city: 5
+-
+    id: 314
+    name: Мончегорская
+    regexp: мончегорск
+    city: 5
+-
+    id: 315
+    name: Коломенская
+    regexp: коломенск
+    city: 5
+-
+    id: 316
+    name: Юго-Западная
+    regexp: юго(.{0,3})западн
+    city: 5
+-
+    id: 317
+    name: Ольгино
+    regexp: ольгино
+    city: 5
+-
+    id: 318
+    name: Луч
+    regexp: луч
+    city: 5
+-
+    id: 319
+    name: Волга
+    regexp: волг
+    city: 5
+-
+    id: 320
+    name: Стрелка
+    regexp: стрелк
+    city: 5
+-
+    id: 321
+    name: Ярмарка
+    regexp: ярмарк
+    city: 5
+-
+    id: 322
+    name: Канавинская
+    regexp: канавинск
+    city: 5
+-
+    id: 323
+    name: Бурнаковская
+    regexp: бурнаковск
+    city: 5
+-
+    id: 324
+    name: Буревестник
+    regexp: буревестник
+    city: 5
+-
+    id: 325
+    name: Варя
+    regexp: варя
+    city: 5
+-
+    id: 326
+    name: Сормовская
+    regexp: сормовск
+    city: 5
+-
+    id: 327
+    name: 'Площадь Славы'
+    regexp: 'площадь.{1,3}славы'
+    city: 5
+-
+    id: 328
+    name: Янская
+    regexp: янск
+    city: 5
+-
+    id: 329
+    name: Починки
+    regexp: починк
+    city: 5
+-
+    id: 330
+    name: Корабелов
+    regexp: корабелов
+    city: 5
+-
+    id: 331
+    name: Гаугеля
+    regexp: гаугел
+    city: 5
