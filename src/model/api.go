@@ -36,7 +36,7 @@ func FormatMessage(db *dbal.DBAL, note dbal.Note) string {
 
 	if len(note.Photos) != 0 {
 		b.WriteString("\n")
-		b.WriteString(fmt.Sprintf("\n <a href='%s'>Фотог квартиры</a>", note.Photos[0]))
+		b.WriteString(fmt.Sprintf("\n <a href='%s'>Фото квартиры</a>", note.Photos[0]))
 	} else {
 		b.WriteString("\n <a href='https://socrent.ru/img/logo.png'>Фото квартиры</a>")
 	}
