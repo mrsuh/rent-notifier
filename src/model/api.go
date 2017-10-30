@@ -30,13 +30,15 @@ func FormatMessage(db *dbal.DBAL, note dbal.Note) string {
 
 	b.WriteString(fmt.Sprintf("%s <a href='%s'>Перейти к объявлению</a>", note.Contact, note.Link))
 
-	b.WriteString("\n")
+	b.WriteString("\n\n")
 
 	b.WriteString(note.Description)
 
 	if len(note.Photos) != 0 {
 		b.WriteString("\n")
 		b.WriteString(note.Photos[0])
+	} else {
+		b.WriteString("https://socrent.ru/img/logo.png")
 	}
 
 	return b.String()
