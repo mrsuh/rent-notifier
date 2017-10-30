@@ -54,12 +54,12 @@ func (dbal *DBAL) AddRecipient(recipient Recipient) {
 }
 
 func (dbal *DBAL) RemoveRecipient(recipient Recipient) {
-	dbal.db.C("recipients").Remove(bson.M{"_id": recipient.Id})
+	dbal.db.C("recipients").Remove(bson.M{"telegram_chat_id": recipient.TelegramChatId})
 }
 
 func (dbal *DBAL) FindRecipientsByChatId(chatId int) []Recipient {
 	result := []Recipient{}
-	dbal.db.C("recipients").Find(bson.M{"chat_id": chatId}).All(&result)
+	dbal.db.C("recipients").Find(bson.M{"telegram_chat_id": chatId}).All(&result)
 
 	return result
 }
