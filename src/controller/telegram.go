@@ -203,5 +203,5 @@ func onCity(db *dbal.DBAL, chat_id int, messages chan model.Message) {
 	for _, city := range db.FindCities() {
 		cities = append(cities, city.Name)
 	}
-	messages <- model.Message{ChatId:chat_id, Text: fmt.Sprintf("Список городов:\n %s", strings.Join(cities, "\n"))}
+	messages <- model.Message{ChatId:chat_id, Text: fmt.Sprintf("Список городов:\n\n%s", strings.Join(cities, "\n"))}
 }
