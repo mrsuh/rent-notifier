@@ -89,7 +89,7 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan model.Message)
 		return nil
 	}
 
-	messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: /help"}
+	messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: <b>/help</b>"}
 
 	log.Print("wrong message", text)
 
@@ -170,7 +170,7 @@ func onUnSubscribe(db *dbal.DBAL, chat_id int, messages chan model.Message) {
 		db.RemoveRecipient(exists_recipient)
 	}
 
-	messages <- model.Message{ChatId:chat_id, Text: "Вы успешно отписаны"}
+	messages <- model.Message{ChatId:chat_id, Text: "Вы успешно отписаны."}
 }
 
 func onStart(chat_id int, messages chan model.Message) {
@@ -184,7 +184,7 @@ func onStart(chat_id int, messages chan model.Message) {
 	b.WriteString("Чтобы получить список доступных городов напишите: <b>/сity</b>\n")
 	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
 
-	messages <- model.Message{ChatId:chat_id, Text: "Добро пожаловать..."}
+	messages <- model.Message{ChatId:chat_id, Text: b.String()}
 }
 
 func onHelp(chat_id int, messages chan model.Message){
