@@ -57,9 +57,15 @@ func (dbal *DBAL) RemoveRecipient(recipient Recipient) {
 	dbal.db.C("recipients").Remove(bson.M{"_id": recipient.Id})
 }
 
+func (dbal *DBAL) FindRecipientsByChatId(chatId int) []Recipient {
+	result := []Recipient{}
+	dbal.db.C("recipients").Find(bson.M{"chat_id": chatId}).All(&result)
+
+	return result
+}
+
 func (dbal *DBAL) FindRecipientsByNote(note Note) []Recipient {
 	result := []Recipient{}
-	dbal.db.C("recipients").Find(bson.M{"city": note.City, "subways": bson.M{"$in": note.Subways}, "types": note.Type}).All(&result)
 
 	conditions := make([]bson.M, 0)
 	conditions = append(conditions, bson.M{"city": note.City, "subways": bson.M{"$in": note.Subways}, "types": note.Type})

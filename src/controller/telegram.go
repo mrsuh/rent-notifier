@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"rent-notifier/src/model"
 	"log"
+	"bytes"
 )
 
 type BodyRequest struct {
@@ -67,6 +68,13 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan model.Message)
 		return nil
 	}
 
+	re_command_city := regexp.MustCompile(`\/city`)
+	if re_command_city.Match(text) {
+		onCity(db, chatId, messages)
+
+		return nil
+	}
+
 	re_subscribe := regexp.MustCompile(`хочу|снять`)
 	if re_subscribe.Match(text) {
 		onSubscribe(db, text, chatId, messages)
@@ -76,17 +84,19 @@ func Parse(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan model.Message)
 
 	re_unsubscribe := regexp.MustCompile(`отписаться|\/unsubscribe`)
 	if re_unsubscribe.Match(text) {
-		onUnSubscribe(chatId, messages)
+		onUnSubscribe(db, chatId, messages)
 
 		return nil
 	}
+
+	messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: /help"}
 
 	log.Print("wrong message", text)
 
 	return nil
 }
 
-func onSubscribe(db *dbal.DBAL, byte_text []byte, chat_id int, messages chan model.Message) {
+func onSubscribe(db *dbal.DBAL, byte_text []byte, chatId int, messages chan model.Message) {
 
 	city := dbal.City{}
 	for _, _city := range db.FindCities() {
@@ -100,7 +110,9 @@ func onSubscribe(db *dbal.DBAL, byte_text []byte, chat_id int, messages chan mod
 	}
 
 	if 0 == city.Id {
-		//todo
+		messages <- model.Message{ChatId: chatId, Text: "Вы не указали город"}
+
+		return
 	}
 
 	types := make([]int, 0)
@@ -113,8 +125,10 @@ func onSubscribe(db *dbal.DBAL, byte_text []byte, chat_id int, messages chan mod
 	}
 
 	if 0 == len(types) {
-		fmt.Println("no types")
-		//todo
+
+		messages <- model.Message{ChatId: chatId, Text: "Вы не указали тип жилья"}
+
+		return
 	}
 
 	subways := make([]int, 0)
@@ -128,39 +142,66 @@ func onSubscribe(db *dbal.DBAL, byte_text []byte, chat_id int, messages chan mod
 
 	if 0 == len(subways) {
 		fmt.Println("no subways")
-		//todo
 	}
 
-	//find recipient
-	//if exists -> send Message "already subscribed"
-	//create recipient if not exists
+	for _, exists_recipient := range db.FindRecipientsByChatId(chatId) {
+		db.RemoveRecipient(exists_recipient)
+	}
 
-	recipient := dbal.Recipient{TelegramChatId: chat_id, City: city.Id, Subways: subways, Types: types}
+	recipient := dbal.Recipient{TelegramChatId: chatId, City: city.Id, Subways: subways, Types: types}
 
 	db.AddRecipient(recipient)
 
-	//send message  "Вы успешно подписаны на ..."
+	var b bytes.Buffer
 
-	messages <- model.Message{ChatId:chat_id, Text: "Вы успешно подписаны на ..."}
+	b.WriteString("Ваша подписка успешно оформлена!\n")
+	b.WriteString(fmt.Sprintf("Тип: %s\n", model.FormatTypes(recipient.Types)))
+	b.WriteString(fmt.Sprintf("Город: %s\n", city.Name))
+	if city.HasSubway && len(recipient.Subways) > 0 {
+		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(db, recipient.Subways)))
+	}
+
+	messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
 
-func onUnSubscribe(chat_id int, messages chan model.Message) {
+func onUnSubscribe(db *dbal.DBAL, chat_id int, messages chan model.Message) {
 
-	//recipients := db.FindRecipientsByChatId(bodyRequest.Message.Chat.Id)
-	//
-	//for _, recipient := range recipients {
-	//	db.RemoveRecipient(recipient)
-	//}
-
-	//send message "вы успешно отписаны"
+	for _, exists_recipient := range db.FindRecipientsByChatId(chat_id) {
+		db.RemoveRecipient(exists_recipient)
+	}
 
 	messages <- model.Message{ChatId:chat_id, Text: "Вы успешно отписаны"}
 }
 
 func onStart(chat_id int, messages chan model.Message) {
+	var b bytes.Buffer
+
+	b.WriteString("Добро пожаловать!\n")
+	b.WriteString("<b>SocrentBot</b> предназначен для рассылки свежих объявлений жилья от собственников.\n")
+	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
+	b.WriteString("Например: <i>Снять комнату в Москве около метро Академическая</i>\n")
+	b.WriteString("Чтобы получить более подробную информацю о подписках напишие: <b>/help</b>\n")
+	b.WriteString("Чтобы получить список доступных городов напишите: <b>/сity</b>\n")
+	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+
 	messages <- model.Message{ChatId:chat_id, Text: "Добро пожаловать..."}
 }
 
 func onHelp(chat_id int, messages chan model.Message){
-	messages <- model.Message{ChatId:chat_id, Text: "Список городов, как подписаться, как отписаться"}
+	var b bytes.Buffer
+	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
+	b.WriteString("Например: <i>Снять комнату, однушку, двушку, трешку, студию в Москве около метро Академическая, Выхино, Дубровка</i>\n")
+	b.WriteString("При новой подписке старая подписка удаляется\n")
+	b.WriteString("Чтобы получить список доступных городов напишите: <b>/сity</b>\n")
+	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+
+	messages <- model.Message{ChatId:chat_id, Text: b.String()}
+}
+
+func onCity(db *dbal.DBAL, chat_id int, messages chan model.Message) {
+	cities := make([]string, 0)
+	for _, city := range db.FindCities() {
+		cities = append(cities, city.Name)
+	}
+	messages <- model.Message{ChatId:chat_id, Text: fmt.Sprintf("Список городов:\n %s", strings.Join(cities, "\n"))}
 }
