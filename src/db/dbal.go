@@ -112,6 +112,7 @@ func (dbal *DBAL) FindTypes() []Type {
 	result = append(result, Type{Id: 1, Regexp: "однушк"})
 	result = append(result, Type{Id: 2, Regexp: "двушк"})
 	result = append(result, Type{Id: 3, Regexp: "трешк"})
+	result = append(result, Type{Id: 5, Regexp: "студи"})
 
 	return result
 }
