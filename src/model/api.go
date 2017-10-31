@@ -65,7 +65,7 @@ func FormatType(note_type int) string {
 
 func FormatTypes(types []int) string {
 	types_string := make([]string, 0)
-	for rent_type := range types {
+	for _, rent_type := range types {
 		types_string = append(types_string, FormatType(rent_type))
 	}
 
