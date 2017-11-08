@@ -36,19 +36,27 @@ func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 		return err
 	}
 
+	vkIds := make([]int, 0)
 	for _, recipient := range controller.Db.FindRecipientsByNote(note) {
 
 		switch(recipient.ChatType) {
 		case dbal.RECIPIENT_TELEGRAM:
 			text := controller.formatMessageTelegram(note)
 			controller.TelegramMessages <- model.Message{ChatId: recipient.ChatId, Text: text}
-			break;
+			break
+
 		case dbal.RECIPIENT_VK:
-			text := controller.formatMessageVk(note)
-			controller.VkMessages <- model.Message{ChatId: recipient.ChatId, Text: text}
+			vkIds = append(vkIds, recipient.ChatId)
+			break
+
 		default:
 			log.Printf("invalid recipient chat type: %s", recipient.ChatType)
 		}
+	}
+
+	if len(vkIds) > 0 {
+		text := controller.formatMessageVk(note)
+		controller.VkMessages <- model.Message{ChatIds: vkIds, IsBulk: true, Text: text}
 	}
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
