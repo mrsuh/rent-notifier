@@ -63,8 +63,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 
 	b.WriteString("\n******socrent.ru******\n")
 	b.WriteString(fmt.Sprintf("<b>%s</b>\n", model.FormatHeader(controller.Db, note)))
-	b.WriteString(fmt.Sprintf("%s <a href='%s'>Перейти к объявлению</a>\n\n", note.Contact, note.Link))
-	b.WriteString(note.Description)
+	b.WriteString(fmt.Sprintf("%s\n<a href='%s'>Перейти к объявлению</a>\n\n", note.Contact, note.Link))
 	b.WriteString("\n******socrent.ru******\n")
 
 	return b.String()
@@ -76,8 +75,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 
 	b.WriteString("\n******socrent.ru******\n")
 	b.WriteString(model.FormatHeader(controller.Db, note))
-	b.WriteString(fmt.Sprintf("\n%s %s\n\n", note.Contact, note.Link))
-	b.WriteString(note.Description)
+	b.WriteString(fmt.Sprintf("\n%s\n%s\n\n", note.Contact, note.Link))
 	b.WriteString("\n******socrent.ru******\n")
 
 	return b.String()
