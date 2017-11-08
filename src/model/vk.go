@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"log"
 )
 
 type Vk struct {
@@ -22,7 +23,11 @@ func (vk *Vk) SendMessage(messages chan Message) {
 		form.Add("v", "5.62")
 		form.Add("message", message.Text)
 
-		http.Post("https://vk.com/messages.send", "application/json", strings.NewReader(form.Encode()))
+		_, err := http.Post("https://vk.com/messages.send", "application/json", strings.NewReader(form.Encode()))
+
+		if nil != err {
+			log.Printf("request err: %s", err)
+		}
 
 		time.Sleep(50 * time.Millisecond) //20 rps
 	}
