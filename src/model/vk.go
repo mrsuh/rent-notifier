@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"log"
+	"io/ioutil"
 )
 
 type Vk struct {
@@ -16,8 +17,6 @@ type Vk struct {
 func (vk *Vk) SendMessage(messages chan Message) {
 
 	for message := range messages {
-
-		log.Printf("request chat_id: %s, message: %s", message.ChatId, message.Text)
 
 		form := url.Values{}
 		form.Add("user_id", strconv.Itoa(message.ChatId))
@@ -32,6 +31,9 @@ func (vk *Vk) SendMessage(messages chan Message) {
 		if nil != err {
 			log.Printf("request err: %s", err)
 		}
+
+		bodyBytes,_ := ioutil.ReadAll(resp.Body)
+		log.Printf("response: %s", string(bodyBytes))
 
 		time.Sleep(50 * time.Millisecond) //20 rps
 	}
