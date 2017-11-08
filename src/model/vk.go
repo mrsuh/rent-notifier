@@ -25,7 +25,9 @@ func (vk *Vk) SendMessage(messages chan Message) {
 		form.Add("v", "5.64")
 		form.Add("message", message.Text)
 
-		_, err := http.Post("https://api.vk.com/method/messages.send", "application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
+		resp, err := http.Post("https://api.vk.com/method/messages.send", "application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
+
+		defer resp.Body.Close()
 
 		if nil != err {
 			log.Printf("request err: %s", err)
