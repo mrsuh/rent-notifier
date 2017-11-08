@@ -12,56 +12,63 @@ import (
 	"bytes"
 )
 
-type TelegramBodyRequest struct {
-	UpdateId int                    `json:"update_id"`
-	Message  TelegramMessageRequest `json:"message"`
+type VkBodyRequest struct {
+	Type    string          `json:"type"`
+	Object  VkObjectRequest `json:"object"`
+	GroupId int             `json:"group_id"`
+	Secret  string          `json:"secret"`
 }
 
-type TelegramMessageRequest struct {
-	Chat TelegramChatRequest `json:"chat"`
-	Text string              `json:"text"`
+type VkObjectRequest struct {
+	Date      int    `json:"date"`
+	Out       int    `json:"out"`
+	UserId    int    `json:"user_id"`
+	ReadState int    `json:"read_state"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
 }
 
-type TelegramChatRequest struct {
-	Id int `json:"id"`
-}
-
-type TelegramMessageResponse struct {
-	ChatId string `json:"chat_id"`
-	Text   string `json:"text"`
-}
-
-type TelegramController struct {
+type VkController struct {
 	Messages chan model.Message
 	Db       *dbal.DBAL
 	Prefix   string
+	ConfirmSecret string
 }
 
-func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
+func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 
 	ctx.SetContentType("application/json")
 
 	body := string(ctx.PostBody())
 
-	bodyRequest := TelegramBodyRequest{}
+	bodyRequest := VkBodyRequest{}
 
 	err := json.Unmarshal([]byte(body), &bodyRequest)
 
 	if nil != err {
-
 		log.Printf("unmarshal error: %s", err)
 
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		ctx.SetBody([]byte(`{"status": "err"}`))
+		ctx.SetBody([]byte("ok"))
 
 		return err
 	}
 
-	text := []byte(strings.TrimSpace(strings.ToLower(bodyRequest.Message.Text)))
-	chatId := bodyRequest.Message.Chat.Id
+	if "confirmation" == bodyRequest.Type {
+
+		log.Print("confirmation")
+
+		ctx.SetStatusCode(fasthttp.StatusOK)
+		ctx.SetBody([]byte(controller.ConfirmSecret))
+
+		return nil
+	}
+
+	text := []byte(strings.TrimSpace(strings.ToLower(bodyRequest.Object.Body)))
+	chatId := bodyRequest.Object.UserId
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetBody([]byte(`{"status": "ok"}`))
+	ctx.SetBody([]byte("ok"))
 
 	re_command_start := regexp.MustCompile(`\/start`)
 	if re_command_start.Match(text) {
@@ -105,7 +112,7 @@ func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
-func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
+func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 
 	city := dbal.City{}
 	for _, _city := range controller.Db.FindCities() {
@@ -153,11 +160,11 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
 		log.Println("no subways")
 	}
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_TELEGRAM) {
+	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_VK) {
 		controller.Db.RemoveRecipient(exists_recipient)
 	}
 
-	recipient := dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_TELEGRAM, City: city.Id, Subways: subways, Types: types}
+	recipient := dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_VK, City: city.Id, Subways: subways, Types: types}
 
 	controller.Db.AddRecipient(recipient)
 
@@ -173,16 +180,16 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
 
-func (controller TelegramController) onUnSubscribe(chat_id int) {
+func (controller VkController) onUnSubscribe(chat_id int) {
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chat_id, dbal.RECIPIENT_TELEGRAM) {
+	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chat_id, dbal.RECIPIENT_VK) {
 		controller.Db.RemoveRecipient(exists_recipient)
 	}
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: "Вы успешно отписаны."}
 }
 
-func (controller TelegramController) onStart(chat_id int) {
+func (controller VkController) onStart(chat_id int) {
 	var b bytes.Buffer
 
 	b.WriteString("Добро пожаловать!\n")
@@ -196,9 +203,8 @@ func (controller TelegramController) onStart(chat_id int) {
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }
 
-func (controller TelegramController) onHelp(chat_id int) {
+func (controller VkController) onHelp(chat_id int) {
 	var b bytes.Buffer
-	b.WriteString("<b>SocrentBot</b> предназначен для рассылки свежих объявлений жилья от собственников.\n")
 	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
 	b.WriteString("Например: <i>Снять комнату, однушку, двушку, трешку, студию в Москве около метро Академическая, Выхино, Дубровка</i>\n")
 	b.WriteString("При новой подписке старая подписка удаляется\n")
@@ -208,10 +214,11 @@ func (controller TelegramController) onHelp(chat_id int) {
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }
 
-func (controller TelegramController) onCity(chat_id int) {
+func (controller VkController) onCity(chat_id int) {
 	cities := make([]string, 0)
 	for _, city := range controller.Db.FindCities() {
 		cities = append(cities, city.Name)
 	}
+
 	controller.Messages <- model.Message{ChatId: chat_id, Text: fmt.Sprintf("Список городов:\n\n%s", strings.Join(cities, "\n"))}
 }

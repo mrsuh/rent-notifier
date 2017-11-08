@@ -5,9 +5,17 @@ import (
 	"encoding/json"
 	"rent-notifier/src/db"
 	"rent-notifier/src/model"
+	"log"
 )
 
-func Notify(ctx *fasthttp.RequestCtx, db *dbal.DBAL , messages chan model.Message) error {
+type ApiController struct {
+	TelegramMessages chan model.Message
+	VkMessages chan model.Message
+	Db       *dbal.DBAL
+	Prefix   string
+}
+
+func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 
 	ctx.SetContentType("application/json")
 
@@ -18,15 +26,28 @@ func Notify(ctx *fasthttp.RequestCtx, db *dbal.DBAL , messages chan model.Messag
 	err := json.Unmarshal([]byte(body), &note)
 
 	if nil != err {
+		log.Printf("unmarshal error: %s", err)
+
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		ctx.SetBody([]byte(`{"status": "err"}`))
 
 		return err
 	}
 
-	for _, recipient := range db.FindRecipientsByNote(note) {
-		text := model.FormatMessage(db, note)
-		messages <- model.Message{ChatId: recipient.TelegramChatId, Text: text}
+	for _, recipient := range controller.Db.FindRecipientsByNote(note) {
+		text := model.FormatMessage(controller.Db, note)
+
+		message := model.Message{ChatId: recipient.ChatId, Text: text}
+
+		switch(recipient.ChatType) {
+		case dbal.RECIPIENT_TELEGRAM:
+			controller.TelegramMessages <- message
+			break;
+		case dbal.RECIPIENT_VK:
+			controller.VkMessages <- message
+		default:
+			log.Printf("invalid recipient chat type: %s", recipient.ChatType)
+		}
 	}
 
 	ctx.SetStatusCode(fasthttp.StatusOK)

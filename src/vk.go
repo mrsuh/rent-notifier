@@ -11,10 +11,10 @@ import (
 	"os"
 )
 
-func requestHandlerTelegram(ctx *fasthttp.RequestCtx, ctl controller.TelegramController) {
+func requestHandlerVk(ctx *fasthttp.RequestCtx, ctl controller.VkController) {
 
 	switch string(ctx.Path()) {
-	case fmt.Sprintf("/telegram/%s/webhook", ctl.Prefix):
+	case fmt.Sprintf("/vk/%s/webhook", ctl.Prefix):
 
 		if !ctx.IsPost() {
 			ctx.Error("Method not allowed", fasthttp.StatusMethodNotAllowed)
@@ -48,20 +48,20 @@ func main() {
 	defer logFile.Close()
 
 	log.SetOutput(logFile)
-	log.SetPrefix("telegram ")
+	log.SetPrefix("vk ")
 
 	db := dbal.Connect(conf["database.dsn"].(string))
 
 	messages := make(chan model.Message)
-	telegram := model.Telegram{Token: conf["telegram.token"].(string)}
-	go telegram.SendMessage(messages)
+	vk := model.Vk{Token: conf["vk.token"].(string)}
+	go vk.SendMessage(messages)
 
-	log.Printf("server telegram run on %s", conf["telegram.listen"].(string))
+	log.Printf("server vk run on %s", conf["vk.listen"].(string))
 
-	ctl := controller.TelegramController{Db: db, Messages: messages, Prefix: conf["telegram.prefix"].(string)}
+	ctl := controller.VkController{Db: db, Messages: messages, Prefix: conf["vk.prefix"].(string), ConfirmSecret: conf["vk.confirm_secret"].(string)}
 
-	server_err := fasthttp.ListenAndServe(conf["telegram.listen"].(string), func(ctx *fasthttp.RequestCtx) {
-		requestHandlerTelegram(ctx, ctl)
+	server_err := fasthttp.ListenAndServe(conf["vk.listen"].(string), func(ctx *fasthttp.RequestCtx) {
+		requestHandlerVk(ctx, ctl)
 	})
 
 	if server_err != nil {

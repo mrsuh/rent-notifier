@@ -2,29 +2,27 @@ package main
 
 import (
 	"github.com/valyala/fasthttp"
-	config "github.com/mrsuh/cli-config"
+	"github.com/mrsuh/cli-config"
 	"fmt"
 	"log"
 	"rent-notifier/src/db"
 	"rent-notifier/src/model"
 	"rent-notifier/src/controller"
+	"os"
 )
 
-func requestHandlerApi(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan model.Message) {
+func requestHandlerApi(ctx *fasthttp.RequestCtx, ctl controller.ApiController) {
+
 	switch string(ctx.Path()) {
 
-	case "/api/v1/notify":
+	case fmt.Sprintf("/%s/notify", ctl.Prefix):
 
 		if !ctx.IsPost() {
 			ctx.Error("Method not allowed", fasthttp.StatusMethodNotAllowed)
 			break
 		}
 
-		err := controller.Notify(ctx, db, messages)
-
-		if err != nil {
-			log.Println("error", err)
-		}
+		ctl.Notify(ctx)
 
 		break
 	default:
@@ -34,29 +32,44 @@ func requestHandlerApi(ctx *fasthttp.RequestCtx, db *dbal.DBAL, messages chan mo
 
 func main() {
 
-	conf_instance := config.GetInstance()
+	confInstance := config.GetInstance()
 
-	err := conf_instance.Init()
+	err := confInstance.Init()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	conf := conf_instance.Get()
+	conf := confInstance.Get()
 
 	db := dbal.Connect(conf["database.dsn"].(string))
 
-	messages := make(chan model.Message)
+	logFile, err := os.OpenFile(conf["log.file"].(string), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
+	log.SetPrefix("api ")
+
+	telegramMessages := make(chan model.Message)
 	telegram := model.Telegram{Token: conf["telegram.token"].(string)}
-	go telegram.SendMessage(messages)
+	go telegram.SendMessage(telegramMessages)
 
-	fmt.Println("server run on ", conf["api.listen"].(string))
+	vkMessages := make(chan model.Message)
+	vk := model.Vk{Token: conf["vk.token"].(string)}
+	go vk.SendMessage(vkMessages)
 
-	server_api_err := fasthttp.ListenAndServe(conf["api.listen"].(string), func(ctx *fasthttp.RequestCtx) {
-		requestHandlerApi(ctx, db, messages)
+	log.Printf("server run on %s", conf["api.listen"].(string))
+
+	ctl := controller.ApiController{Db: db, TelegramMessages: telegramMessages, VkMessages: vkMessages, Prefix: conf["api.prefix"].(string)}
+
+	serverErr := fasthttp.ListenAndServe(conf["api.listen"].(string), func(ctx *fasthttp.RequestCtx) {
+		requestHandlerApi(ctx, ctl)
 	})
 
-	if server_api_err != nil {
-		log.Fatal(server_api_err)
+	if serverErr != nil {
+		log.Fatal(serverErr)
 	}
 }
