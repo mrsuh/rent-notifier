@@ -31,15 +31,15 @@ func requestHandlerVk(ctx *fasthttp.RequestCtx, ctl controller.VkController) {
 
 func main() {
 
-	conf_instance := config.GetInstance()
+	confInstance := config.GetInstance()
 
-	err := conf_instance.Init()
+	err := confInstance.Init()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	conf := conf_instance.Get()
+	conf := confInstance.Get()
 
 	logFile, err := os.OpenFile(conf["log.file"].(string), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
