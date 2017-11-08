@@ -4,12 +4,8 @@ import (
 	"fmt"
 	"bytes"
 	"net/http"
+	"time"
 )
-
-type Message struct {
-	ChatId int
-	Text   string
-}
 
 type Telegram struct {
 	Token string
@@ -21,8 +17,8 @@ func (telegram *Telegram) SendMessage(messages chan Message) {
 
 		body := fmt.Sprintf(`{"chat_id": %d, "text": "%s", "parse_mode": "HTML"}`, message.ChatId, message.Text)
 
-		http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/%s", telegram.Token, "sendMessage"), "application/json", bytes.NewBuffer([]byte(body)))
+		http.Post(fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", telegram.Token), "application/json", bytes.NewBuffer([]byte(body)))
 
-		fmt.Println(body)
+		time.Sleep(35 * time.Millisecond) //30 rps
 	}
 }
