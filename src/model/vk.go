@@ -17,6 +17,8 @@ func (vk *Vk) SendMessage(messages chan Message) {
 
 	for message := range messages {
 
+		log.Printf("request chat_id: %s, message: %s", message.ChatId, message.Text)
+
 		form := url.Values{}
 		form.Add("user_id", strconv.Itoa(message.ChatId))
 		form.Add("access_token", vk.Token)
