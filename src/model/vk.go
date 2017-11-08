@@ -22,10 +22,10 @@ func (vk *Vk) SendMessage(messages chan Message) {
 		form := url.Values{}
 		form.Add("user_id", strconv.Itoa(message.ChatId))
 		form.Add("access_token", vk.Token)
-		form.Add("v", "5.62")
+		form.Add("v", "5.64")
 		form.Add("message", message.Text)
 
-		_, err := http.Post("https://vk.com/messages.send", "application/json", strings.NewReader(form.Encode()))
+		_, err := http.Post("https://api.vk.com/method/messages.send", "application/json", strings.NewReader(form.Encode()))
 
 		if nil != err {
 			log.Printf("request err: %s", err)
