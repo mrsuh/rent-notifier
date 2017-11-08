@@ -7,11 +7,9 @@ import (
 	"bytes"
 )
 
-func FormatMessage(db *dbal.DBAL, note dbal.Note) string {
-
+func FormatHeader(db *dbal.DBAL, note dbal.Note) string {
 	var b bytes.Buffer
 
-	b.WriteString("<b>")
 	b.WriteString(FormatType(note.Type))
 
 	if note.Price != 0 {
@@ -24,21 +22,6 @@ func FormatMessage(db *dbal.DBAL, note dbal.Note) string {
 	if text_subways != "" {
 		b.WriteString(" около метро ")
 		b.WriteString(text_subways)
-	}
-	b.WriteString("</b>")
-	b.WriteString("\n")
-
-	b.WriteString(fmt.Sprintf("%s <a href='%s'>Перейти к объявлению</a>", note.Contact, note.Link))
-
-	b.WriteString("\n\n")
-
-	b.WriteString(note.Description)
-
-	if len(note.Photos) != 0 {
-		b.WriteString("\n")
-		b.WriteString(fmt.Sprintf("\n <a href='%s'>Фото квартиры</a>", note.Photos[0]))
-	} else {
-		b.WriteString("\n <a href='https://socrent.ru/img/logo.png'>Фото квартиры</a>")
 	}
 
 	return b.String()
