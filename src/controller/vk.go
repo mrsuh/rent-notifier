@@ -202,8 +202,6 @@ func (controller VkController) onStart(chatId int) {
 	b.WriteString("Список доступных городов: /сity\n")
 	b.WriteString("Чтобы отписаться напишие: отписаться или /unsubscribe\n")
 
-	log.Printf("send message chat_id: %s, message: %s", chatId, b.String())
-
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
 
