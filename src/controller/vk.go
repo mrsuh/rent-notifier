@@ -191,7 +191,7 @@ func (controller VkController) onUnSubscribe(chat_id int) {
 	controller.Messages <- model.Message{ChatId: chat_id, Text: "Вы успешно отписаны."}
 }
 
-func (controller VkController) onStart(chat_id int) {
+func (controller VkController) onStart(chatId int) {
 	var b bytes.Buffer
 
 	b.WriteString("Добро пожаловать!\n")
@@ -202,7 +202,9 @@ func (controller VkController) onStart(chat_id int) {
 	b.WriteString("Список доступных городов: <b>/сity</b>\n")
 	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
 
-	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
+	log.Printf("send message chat_id: %s, message: %s", chatId, b.String())
+
+	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
 
 func (controller VkController) onHelp(chat_id int) {
