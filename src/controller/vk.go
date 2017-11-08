@@ -93,7 +93,7 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 		return nil
 	}
 
-	re_subscribe := regexp.MustCompile(`\/снять`)
+	re_subscribe := regexp.MustCompile(`снять`)
 	if re_subscribe.Match(text) {
 		controller.onSubscribe(chatId, text)
 
@@ -107,7 +107,7 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 		return nil
 	}
 
-	controller.Messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: напишие <b>/help</b>"}
+	controller.Messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: напишие /help"}
 
 	log.Printf("wrong message: %s", text)
 
@@ -173,10 +173,10 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 	var b bytes.Buffer
 
 	b.WriteString("Ваша подписка успешно оформлена!\n")
-	b.WriteString(fmt.Sprintf("<b>Тип</b>: %s\n", model.FormatTypes(recipient.Types)))
-	b.WriteString(fmt.Sprintf("<b>Город</b>: %s\n", city.Name))
+	b.WriteString(fmt.Sprintf("Тип: %s\n", model.FormatTypes(recipient.Types)))
+	b.WriteString(fmt.Sprintf("Город: %s\n", city.Name))
 	if city.HasSubway && len(recipient.Subways) > 0 {
-		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
+		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
 	}
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
@@ -195,12 +195,12 @@ func (controller VkController) onStart(chatId int) {
 	var b bytes.Buffer
 
 	b.WriteString("Добро пожаловать!\n")
-	b.WriteString("<b>SocrentBot</b> предназначен для рассылки свежих объявлений жилья от собственников.\n")
+	b.WriteString("SocrentBot предназначен для рассылки свежих объявлений жилья от собственников.\n")
 	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
-	b.WriteString("Например: <i>Снять двушку в Москве около метро Академическая</i>\n")
-	b.WriteString("Более подробная информацю о подписках: <b>/help</b>\n")
-	b.WriteString("Список доступных городов: <b>/сity</b>\n")
-	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+	b.WriteString("Например: Снять двушку в Москве около метро Академическая\n")
+	b.WriteString("Более подробная информацю о подписках: /help\n")
+	b.WriteString("Список доступных городов: /сity\n")
+	b.WriteString("Чтобы отписаться напишие: отписаться или /unsubscribe\n")
 
 	log.Printf("send message chat_id: %s, message: %s", chatId, b.String())
 
@@ -210,10 +210,10 @@ func (controller VkController) onStart(chatId int) {
 func (controller VkController) onHelp(chat_id int) {
 	var b bytes.Buffer
 	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
-	b.WriteString("Например: <i>Снять комнату, однушку, двушку, трешку, студию в Москве около метро Академическая, Выхино, Дубровка</i>\n")
+	b.WriteString("Например: Снять комнату, однушку, двушку, трешку, студию в Москве около метро Академическая, Выхино, Дубровка\n")
 	b.WriteString("При новой подписке старая подписка удаляется\n")
-	b.WriteString("Список доступных городов напишите: <b>/сity</b>\n")
-	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+	b.WriteString("Список доступных городов напишите: /сity\n")
+	b.WriteString("Чтобы отписаться напишие: отписаться или /unsubscribe\n")
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }

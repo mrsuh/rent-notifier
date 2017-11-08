@@ -84,7 +84,7 @@ func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
 		return nil
 	}
 
-	re_subscribe := regexp.MustCompile(`\/снять`)
+	re_subscribe := regexp.MustCompile(`снять`)
 	if re_subscribe.Match(text) {
 		controller.onSubscribe(chatId, text)
 
