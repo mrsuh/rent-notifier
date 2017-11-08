@@ -70,6 +70,8 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte("ok"))
 
+	log.Printf("message: %s", text)
+
 	re_command_start := regexp.MustCompile(`\/start`)
 	if re_command_start.Match(text) {
 		controller.onStart(chatId)
