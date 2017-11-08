@@ -19,7 +19,19 @@ func (vk *Vk) SendMessage(messages chan Message) {
 	for message := range messages {
 
 		form := url.Values{}
-		form.Add("user_id", strconv.Itoa(message.ChatId))
+
+		if message.IsBulk {
+
+			vkIds := make([]string, 0)
+			for _, id := range message.ChatIds {
+				vkIds = append(vkIds, strconv.Itoa(id))
+			}
+
+			form.Add("user_ids", strings.Join(vkIds, ","))
+		} else {
+			form.Add("user_id", strconv.Itoa(message.ChatId))
+		}
+
 		form.Add("access_token", vk.Token)
 		form.Add("v", "5.64")
 		form.Add("message", message.Text)
