@@ -74,7 +74,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 
 	b.WriteString("\n******socrent.ru******\n")
 	b.WriteString(model.FormatHeader(controller.Db, note))
-	b.WriteString(note.Link)
+	b.WriteString(fmt.Sprintf("\n%s", note.Link))
 
 	return b.String()
 }
