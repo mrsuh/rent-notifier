@@ -4,28 +4,8 @@ import (
 	"fmt"
 	"rent-notifier/src/db"
 	"strings"
-	"bytes"
+	"strconv"
 )
-
-func FormatHeader(db *dbal.DBAL, note dbal.Note) string {
-	var b bytes.Buffer
-
-	b.WriteString(FormatType(note.Type))
-
-	if note.Price != 0 {
-		b.WriteString(" за ")
-		b.WriteString(FormatPrice(note.Price))
-		b.WriteString(" руб/мес")
-	}
-
-	text_subways := FormatSubways(db, note.Subways)
-	if text_subways != "" {
-		b.WriteString(" около метро ")
-		b.WriteString(text_subways)
-	}
-
-	return b.String()
-}
 
 func FormatType(note_type int) string {
 	type_string := "";
@@ -56,7 +36,13 @@ func FormatTypes(types []int) string {
 }
 
 func FormatPrice(price int) string {
-	return fmt.Sprintf("%d", price)
+
+	priceStr := strconv.Itoa(price)
+	if len(priceStr) > 3 {
+		fmt.Sprintf("%s %s", priceStr[0:(len(priceStr)-3)], priceStr[(len(priceStr)-3):])
+	}
+
+	return priceStr
 }
 
 func FormatSubways(db *dbal.DBAL, subway_ids []int) string {
