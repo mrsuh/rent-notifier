@@ -72,21 +72,21 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 
 	log.Printf("message: %s", text)
 
-	re_command_start := regexp.MustCompile(`\/start`)
+	re_command_start := regexp.MustCompile(`^\/?start`)
 	if re_command_start.Match(text) {
 		controller.onStart(chatId)
 
 		return nil
 	}
 
-	re_command_help := regexp.MustCompile(`\/help`)
+	re_command_help := regexp.MustCompile(`^\/?help`)
 	if re_command_help.Match(text) {
 		controller.onHelp(chatId)
 
 		return nil
 	}
 
-	re_command_city := regexp.MustCompile(`\/city`)
+	re_command_city := regexp.MustCompile(`^\/?city`)
 	if re_command_city.Match(text) {
 		controller.onCity(chatId)
 
@@ -100,7 +100,7 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 		return nil
 	}
 
-	re_unsubscribe := regexp.MustCompile(`отписаться|\/unsubscribe`)
+	re_unsubscribe := regexp.MustCompile(`^отписаться|^\/?unsubscribe`)
 	if re_unsubscribe.Match(text) {
 		controller.onUnSubscribe(chatId)
 

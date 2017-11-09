@@ -63,21 +63,21 @@ func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte(`{"status": "ok"}`))
 
-	re_command_start := regexp.MustCompile(`\/start`)
+	re_command_start := regexp.MustCompile(`^\/?start`)
 	if re_command_start.Match(text) {
 		controller.onStart(chatId)
 
 		return nil
 	}
 
-	re_command_help := regexp.MustCompile(`\/help`)
+	re_command_help := regexp.MustCompile(`^\/?help`)
 	if re_command_help.Match(text) {
 		controller.onHelp(chatId)
 
 		return nil
 	}
 
-	re_command_city := regexp.MustCompile(`\/city`)
+	re_command_city := regexp.MustCompile(`^\/?city`)
 	if re_command_city.Match(text) {
 		controller.onCity(chatId)
 
@@ -91,14 +91,20 @@ func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
 		return nil
 	}
 
-	re_unsubscribe := regexp.MustCompile(`отписаться|\/unsubscribe`)
+	re_unsubscribe := regexp.MustCompile(`^\/?cancel`)
 	if re_unsubscribe.Match(text) {
 		controller.onUnSubscribe(chatId)
 
 		return nil
 	}
 
-	controller.Messages <- model.Message{ChatId: chatId, Text: "Не понимаю вас. Попробуйте обратиться за помощью: напишие <b>/help</b>"}
+	var b bytes.Buffer
+	b.WriteString("Не понимаю вас. Скорее всего вы ввели неизвествую команду.\n")
+	b.WriteString("Для получения рассылки напишите: Снять <b>{тип жилья}</b> в <b>{городе}</b> около <b>{станции метро}</b>(если необходимо)\n")
+	b.WriteString("Например: <i>Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая</i>\n")
+	b.WriteString("Напишите <b>help</b> для более подробной информации\n")
+
+	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
 	log.Printf("wrong message: %s", text)
 
@@ -119,7 +125,13 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
 	}
 
 	if 0 == city.Id {
-		controller.Messages <- model.Message{ChatId: chatId, Text: "Вы не указали город"}
+		var b bytes.Buffer
+		b.WriteString("Вы не указали город\n")
+		b.WriteString("Для получения рассылки напишите: Снять <b>{тип жилья}</b> в <b>{городе}</b> около <b>{станции метро}</b>(если необходимо)\n")
+		b.WriteString("Например: <i>Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая</i>\n")
+		b.WriteString("Напишите <b>help</b> для более подробной информации\n")
+
+		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
 		return
 	}
@@ -135,7 +147,13 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
 
 	if 0 == len(types) {
 
-		controller.Messages <- model.Message{ChatId: chatId, Text: "Вы не указали тип жилья"}
+		var b bytes.Buffer
+		b.WriteString("Вы не указали тип жилья\n")
+		b.WriteString("Для получения рассылки напишите: Снять <b>{тип жилья}</b> в <b>{городе}</b> около <b>{станции метро}</b>(если необходимо)\n")
+		b.WriteString("Например: <i>Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая</i>\n")
+		b.WriteString("Напишите <b>help</b> для более подробной информации\n")
+
+		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
 		return
 	}
@@ -169,6 +187,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) {
 	if city.HasSubway && len(recipient.Subways) > 0 {
 		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
 	}
+	b.WriteString("Вы получите новые объявления как только они появятся.\n")
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
@@ -187,11 +206,12 @@ func (controller TelegramController) onStart(chat_id int) {
 
 	b.WriteString("Добро пожаловать!\n")
 	b.WriteString("<b>SocrentBot</b> предназначен для рассылки свежих объявлений жилья от собственников.\n")
-	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
-	b.WriteString("Например: <i>Снять двушку в Москве около метро Академическая</i>\n")
-	b.WriteString("Более подробная информацю о подписках: <b>/help</b>\n")
-	b.WriteString("Список доступных городов: <b>/сity</b>\n")
-	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+	b.WriteString("Для получения рассылки напишите: Снять <b>{тип жилья}</b> в <b>{городе}</b> около <b>{станции метро}</b>(если необходимо)\n")
+	b.WriteString("Например: <i>Снять двушку в Питере около метро Академическая</i>\n")
+	b.WriteString("Дополнительные команды:\n")
+	b.WriteString("<b>help</b> - более подробная информация\n")
+	b.WriteString("<b>city</b> - список доступных городов\n")
+	b.WriteString("<b>cancel</b> - отменить подписку\n")
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }
@@ -199,11 +219,22 @@ func (controller TelegramController) onStart(chat_id int) {
 func (controller TelegramController) onHelp(chat_id int) {
 	var b bytes.Buffer
 	b.WriteString("<b>SocrentBot</b> предназначен для рассылки свежих объявлений жилья от собственников.\n")
-	b.WriteString("Для получения рассылки напишите тип жилья, ваш город и список станций метро(если необходимо)\n")
-	b.WriteString("Например: <i>Снять комнату, однушку, двушку, трешку, студию в Москве около метро Академическая, Выхино, Дубровка</i>\n")
+	b.WriteString("Для получения рассылки напишите: Снять <b>{тип жилья}</b> в <b>{городе}</b> около <b>{станции метро}</b>(если необходимо)\n")
+	b.WriteString("Типы жилья:\n")
+	b.WriteString("<b>комната</b>\n")
+	b.WriteString("<b>однушка</b>  - 1 комнатная квартира\n")
+	b.WriteString("<b>двушка</b>   - 2 комнатная квартира\n")
+	b.WriteString("<b>трешка</b>   - 3 комнатная квартира\n")
+	b.WriteString("<b>студия</b>   - квартира-студия\n")
+	b.WriteString("<b>квартира</b> - 1,2,3,4+ комнатная квартира, квартира-студия\n")
+	b.WriteString("Например:\n")
+	b.WriteString("Подписаться на объявления о сдаче <b>комнаты</b>: <i>Снять комнату в Москве около метро Академическая</i>\n")
+	b.WriteString("Подписаться на объявления о сдаче <b>1 комнатной квартиры и квартиры студии</b>: <i>Снять однушку, студию в Питере около метро Рыбацкое</i>\n")
+	b.WriteString("Подписаться на объявления о сдаче <b>1,2,3,4+ комнатной квартиры</b>: <i>Снять квартиру в Волгограде</i>\n")
 	b.WriteString("При новой подписке старая подписка удаляется\n")
-	b.WriteString("Список доступных городов напишите: <b>/сity</b>\n")
-	b.WriteString("Чтобы отписаться напишие: <b>отписаться</b> или <b>/unsubscribe</b>\n")
+	b.WriteString("Дополнительные команды:\n")
+	b.WriteString("<b>city</b>   - список доступных городов\n")
+	b.WriteString("<b>cancel</b> - отменить подписку\n")
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }
@@ -213,5 +244,5 @@ func (controller TelegramController) onCity(chat_id int) {
 	for _, city := range controller.Db.FindCities() {
 		cities = append(cities, city.Name)
 	}
-	controller.Messages <- model.Message{ChatId: chat_id, Text: fmt.Sprintf("Список городов:\n\n%s", strings.Join(cities, "\n"))}
+	controller.Messages <- model.Message{ChatId: chat_id, Text: fmt.Sprintf("Список доступных городов:\n\n%s", strings.Join(cities, "\n"))}
 }
