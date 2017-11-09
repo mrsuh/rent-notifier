@@ -8,7 +8,7 @@
     id: 2
     short_name: moskva
     name: 'Москва'
-    regexp: 'мск|москва'
+    regexp: 'мск|москв'
     has_subway: true
 
 -
