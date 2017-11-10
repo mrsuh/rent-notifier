@@ -69,7 +69,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 
 	var b bytes.Buffer
 
-	b.WriteString("\n********************\n")
+	b.WriteString("\n******************************\n")
 	b.WriteString(fmt.Sprintf("<b>Тип</b>: %s\n", model.FormatType(note.Type)))
 
 	if note.Price > 0 {
