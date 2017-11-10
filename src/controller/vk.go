@@ -72,7 +72,7 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 
 	log.Printf("message: %s", text)
 
-	re_command_start := regexp.MustCompile(`^\/?start`)
+	re_command_start := regexp.MustCompile(`^\/?start|привет`)
 	if re_command_start.Match(text) {
 		controller.onStart(chatId)
 
@@ -108,10 +108,10 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 	}
 
 	var b bytes.Buffer
-	b.WriteString("Не понимаю вас. Скорее всего вы ввели неизвествую команду\n")
-	b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо)\n")
-	b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая\n")
-	b.WriteString("\nНапишите help для более подробной информации\n")
+	b.WriteString("Не понимаю вас. Скорее всего вы ввели неизвествую команду.\n")
+	b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо).\n")
+	b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая.\n")
+	b.WriteString("\nНапишите help для более подробной информации.\n")
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
@@ -135,10 +135,10 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 
 	if 0 == city.Id {
 		var b bytes.Buffer
-		b.WriteString("Вы не указали город\n")
-		b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо)\n")
-		b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая\n")
-		b.WriteString("\nНапишите help для более подробной информации\n")
+		b.WriteString("Вы не указали город.\n")
+		b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо).\n")
+		b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая.\n")
+		b.WriteString("\nНапишите help для более подробной информации.\n")
 
 		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
@@ -157,10 +157,10 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 	if 0 == len(types) {
 
 		var b bytes.Buffer
-		b.WriteString("Вы не указали тип жилья\n")
-		b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо)\n")
-		b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая\n")
-		b.WriteString("\nНапишите help для более подробной информации\n")
+		b.WriteString("Вы не указали тип жилья.\n")
+		b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо).\n")
+		b.WriteString("\nНапример: Снять комнату, однушку, двушку, студию в Питере около метро Академическая, Политехническая.\n")
+		b.WriteString("\nНапишите help для более подробной информации.\n")
 
 		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
@@ -196,7 +196,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 	if city.HasSubway && len(recipient.Subways) > 0 {
 		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
 	}
-	b.WriteString("Вы получите новые объявления как только они появятся\n")
+	b.WriteString("Вы получите новые объявления как только они появятся.\n")
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
@@ -214,21 +214,21 @@ func (controller VkController) onStart(chatId int) {
 	var b bytes.Buffer
 
 	b.WriteString("Добро пожаловать!\n")
-	b.WriteString("SocrentBot предназначен для рассылки свежих объявлений жилья от собственников\n")
-	b.WriteString("\nДля получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо)\n")
-	b.WriteString("\nНапример: Снять двушку в Питере около метро Академическая\n")
+	b.WriteString("SocrentBot предназначен для рассылки свежих объявлений жилья от собственников.\n")
+	b.WriteString("\nДля получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо).\n")
+	b.WriteString("\nНапример: Снять двушку в Питере около метро Академическая.\n")
 	b.WriteString("\nДополнительные команды:\n")
-	b.WriteString("help - более подробная информация\n")
-	b.WriteString("city - список доступных городов\n")
-	b.WriteString("cancel - отменить подписку\n")
+	b.WriteString(" + help - более подробная информация\n")
+	b.WriteString(" + city - список доступных городов\n")
+	b.WriteString(" + cancel - отменить подписку\n")
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 }
 
 func (controller VkController) onHelp(chat_id int) {
 	var b bytes.Buffer
-	b.WriteString("SocrentBot предназначен для рассылки свежих объявлений жилья от собственников\n")
-	b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо)\n")
+	b.WriteString("SocrentBot предназначен для рассылки свежих объявлений жилья от собственников.\n")
+	b.WriteString("Для получения рассылки напишите: Снять {тип жилья} в {городе} около {станции метро}(если необходимо).\n")
 	b.WriteString("\nТипы жилья:\n")
 	b.WriteString(" + комната\n")
 	b.WriteString(" + однушка - 1 комнатная квартира\n")
@@ -240,10 +240,10 @@ func (controller VkController) onHelp(chat_id int) {
 	b.WriteString(" + Снять комнату в Москве около метро Академическая\n")
 	b.WriteString(" + Снять однушку, студию в Питере около метро Рыбацкое\n")
 	b.WriteString(" + Снять квартиру в Волгограде\n")
-	b.WriteString("\nПри новой подписке старая подписка удаляется\n")
+	b.WriteString("\nПри новой подписке старая подписка удаляется.\n")
 	b.WriteString("\nДополнительные команды:\n")
-	b.WriteString("city - список доступных городов\n")
-	b.WriteString("cancel - отменить подписку\n")
+	b.WriteString(" + city - список доступных городов\n")
+	b.WriteString(" + cancel - отменить подписку\n")
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: b.String()}
 }

@@ -39,7 +39,7 @@ func FormatPrice(price int) string {
 
 	priceStr := strconv.Itoa(price)
 	if len(priceStr) > 3 {
-		fmt.Sprintf("%s %s", priceStr[0:(len(priceStr)-3)], priceStr[(len(priceStr)-3):])
+		return fmt.Sprintf("%s %s", priceStr[0:(len(priceStr)-3)], priceStr[(len(priceStr)-3):])
 	}
 
 	return priceStr
