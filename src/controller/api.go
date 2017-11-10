@@ -69,7 +69,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 
 	var b bytes.Buffer
 
-	b.WriteString("\n********************\n")
+	b.WriteString("\n******************************\n")
 	b.WriteString(fmt.Sprintf("<b>Тип</b>: %s\n", model.FormatType(note.Type)))
 
 	if note.Price > 0 {
@@ -80,7 +80,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.Db, note.Subways)))
 	}
 
-	b.WriteString(fmt.Sprintf("<b>Ссылка</b>: <a href='%s'>Перейти к объявлению</a>\n", note.Link))
+	b.WriteString(fmt.Sprintf("<b>Ссылка</b>: <a href='%s'>Перейти к объявлению</a>\n\n", note.Link))
 
 	return b.String()
 }
@@ -89,7 +89,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 
 	var b bytes.Buffer
 
-	b.WriteString("\n********************\n")
+	b.WriteString("\n******************************\n")
 	b.WriteString(fmt.Sprintf("Тип: %s\n", model.FormatType(note.Type)))
 
 	if note.Price > 0 {
@@ -100,7 +100,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.Db, note.Subways)))
 	}
 
-	b.WriteString(fmt.Sprintf("Ссылка: %s", note.Link))
+	b.WriteString(fmt.Sprintf("Ссылка: %s\n\n", note.Link))
 
 	return b.String()
 }
