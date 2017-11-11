@@ -69,8 +69,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 
 	var b bytes.Buffer
 
-	b.WriteString("\n******************************\n")
-	b.WriteString(fmt.Sprintf("<b>Тип</b>: %s\n", model.FormatType(note.Type)))
+	b.WriteString(fmt.Sprintf("\n<b>Тип</b>: %s\n", model.FormatType(note.Type)))
 
 	if note.Price > 0 {
 		b.WriteString(fmt.Sprintf("<b>Цена</b>: %s руб/мес\n", model.FormatPrice(note.Price)))
@@ -89,8 +88,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 
 	var b bytes.Buffer
 
-	b.WriteString("\n******************************\n")
-	b.WriteString(fmt.Sprintf("Тип: %s\n", model.FormatType(note.Type)))
+	b.WriteString(fmt.Sprintf("\nТип: %s\n", model.FormatType(note.Type)))
 
 	if note.Price > 0 {
 		b.WriteString(fmt.Sprintf("Цена: %s руб/мес\n", model.FormatPrice(note.Price)))
