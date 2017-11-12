@@ -52,6 +52,7 @@ type Note struct {
 type DBAL struct {
 	session *mgo.Session
 	db      *mgo.Database
+	cities []City
 }
 
 func (dbal *DBAL) AddRecipient(recipient Recipient) {
@@ -88,7 +89,14 @@ func (dbal *DBAL) AddCity(city City) {
 
 func (dbal *DBAL) FindCities() []City {
 	result := []City{}
+
+	if len(dbal.cities) > 0 {
+		return dbal.cities
+	}
+
 	dbal.db.C("cities").Find(bson.M{}).All(&result)
+
+	dbal.cities = result
 
 	return result
 }
@@ -112,12 +120,12 @@ func (dbal *DBAL) FindSubwaysByIds(ids []int) []Subway {
 }
 
 func (dbal *DBAL) FindTypes() []Type {
-	result := []Type{} //todo
+	result := []Type{}
 
 	result = append(result, Type{Id: 0, Regexp: "комнат"})
 	result = append(result, Type{Id: 1, Regexp: "однушк|квартир"})
 	result = append(result, Type{Id: 2, Regexp: "двушк|квартир"})
-	result = append(result, Type{Id: 3, Regexp: "трешк|квартир"})
+	result = append(result, Type{Id: 3, Regexp: "тр(е|ё)шк|квартир"})
 	result = append(result, Type{Id: 4, Regexp: "четыр|квартир"})
 	result = append(result, Type{Id: 5, Regexp: "студи|квартир"})
 
@@ -133,5 +141,5 @@ func Connect(dsn string) *DBAL {
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
-	return &DBAL{session, session.DB("rent-notifier")}
+	return &DBAL{session: session, db: session.DB("rent-notifier")}
 }
