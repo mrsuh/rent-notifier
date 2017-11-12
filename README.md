@@ -23,7 +23,7 @@ bin/telegram config/config.yml
 bin/vk config/config.yml
 ```
 
-Configuration
+## Configuration
 config.config.yml
 ```yaml
 #server api
