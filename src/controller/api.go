@@ -36,6 +36,8 @@ func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 		return err
 	}
 
+	log.Printf("note {city: %s, type: %s, contact: %s}", note.City, note.Type, note.Contact)
+
 	vkIds := make([]int, 0)
 	for _, recipient := range controller.Db.FindRecipientsByNote(note) {
 
