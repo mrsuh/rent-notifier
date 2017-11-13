@@ -120,7 +120,7 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
-func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
+func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 
 	city := dbal.City{}
 	for _, _city := range controller.Db.FindCities() {
@@ -142,7 +142,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 
 		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
-		return
+		return nil
 	}
 
 	types := make([]int, 0)
@@ -164,7 +164,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 
 		controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
 
-		return
+		return nil
 	}
 
 	subways := make([]int, 0)
@@ -181,12 +181,24 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 	}
 
 	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_VK) {
-		controller.Db.RemoveRecipient(exists_recipient)
+		err := controller.Db.RemoveRecipient(exists_recipient)
+
+		if err != nil {
+			log.Printf("error remove recipient: %v", exists_recipient)
+
+			return err
+		}
 	}
 
 	recipient := dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_VK, City: city.Id, Subways: subways, Types: types}
 
-	controller.Db.AddRecipient(recipient)
+	err := controller.Db.AddRecipient(recipient)
+
+	if err != nil {
+		log.Printf("error add recipient: %v", recipient)
+
+		return err
+	}
 
 	var b bytes.Buffer
 
@@ -199,15 +211,25 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) {
 	b.WriteString("Вы получите новые объявления как только они появятся.\n")
 
 	controller.Messages <- model.Message{ChatId: chatId, Text: b.String()}
+
+	return nil
 }
 
-func (controller VkController) onUnSubscribe(chat_id int) {
+func (controller VkController) onUnSubscribe(chat_id int) error {
 
 	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chat_id, dbal.RECIPIENT_VK) {
-		controller.Db.RemoveRecipient(exists_recipient)
+		err := controller.Db.RemoveRecipient(exists_recipient)
+
+		if err != nil {
+			log.Printf("error remove recipient: %v", exists_recipient)
+
+			return err
+		}
 	}
 
 	controller.Messages <- model.Message{ChatId: chat_id, Text: "Вы успешно отменили подписку"}
+
+	return nil
 }
 
 func (controller VkController) onStart(chatId int) {
