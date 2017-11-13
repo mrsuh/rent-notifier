@@ -55,13 +55,13 @@ type DBAL struct {
 	cities []City
 }
 
-func (dbal *DBAL) AddRecipient(recipient Recipient) {
+func (dbal *DBAL) AddRecipient(recipient Recipient) error {
 	recipient.Id = bson.NewObjectId()
-	dbal.db.C("recipients").Insert(&recipient)
+	return dbal.db.C("recipients").Insert(&recipient)
 }
 
-func (dbal *DBAL) RemoveRecipient(recipient Recipient) {
-	dbal.db.C("recipients").Remove(bson.M{"chat_id": recipient.ChatId, "chat_type": recipient.ChatType})
+func (dbal *DBAL) RemoveRecipient(recipient Recipient) error {
+	return dbal.db.C("recipients").Remove(bson.M{"chat_id": recipient.ChatId, "chat_type": recipient.ChatType})
 }
 
 func (dbal *DBAL) FindRecipientsByChatIdAndChatType(chatId int, chatType string) []Recipient {
@@ -83,8 +83,8 @@ func (dbal *DBAL) FindRecipientsByNote(note Note) []Recipient {
 	return result
 }
 
-func (dbal *DBAL) AddCity(city City) {
-	dbal.db.C("cities").Insert(&city)
+func (dbal *DBAL) AddCity(city City) error {
+	return dbal.db.C("cities").Insert(&city)
 }
 
 func (dbal *DBAL) FindCities() []City {
@@ -101,8 +101,8 @@ func (dbal *DBAL) FindCities() []City {
 	return result
 }
 
-func (dbal *DBAL) AddSubway(subway Subway) {
-	dbal.db.C("subways").Insert(&subway)
+func (dbal *DBAL) AddSubway(subway Subway) error {
+	return dbal.db.C("subways").Insert(&subway)
 }
 
 func (dbal *DBAL) FindSubwaysByCity(city City) []Subway {
@@ -140,6 +140,7 @@ func Connect(dsn string) *DBAL {
 
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
+	session.SetSafe(&mgo.Safe{})
 
 	return &DBAL{session: session, db: session.DB("rent-notifier")}
 }
