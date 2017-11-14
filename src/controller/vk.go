@@ -184,7 +184,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 		err := controller.Db.RemoveRecipient(exists_recipient)
 
 		if err != nil {
-			log.Printf("error remove recipient: %v", exists_recipient)
+			log.Printf("error remove recipient: %v %s", exists_recipient, err)
 
 			return err
 		}
@@ -195,7 +195,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 	err := controller.Db.AddRecipient(recipient)
 
 	if err != nil {
-		log.Printf("error add recipient: %v", recipient)
+		log.Printf("error add recipient: %v %s", recipient, err)
 
 		return err
 	}
@@ -221,7 +221,7 @@ func (controller VkController) onUnSubscribe(chat_id int) error {
 		err := controller.Db.RemoveRecipient(exists_recipient)
 
 		if err != nil {
-			log.Printf("error remove recipient: %v", exists_recipient)
+			log.Printf("error remove recipient: %v %s", exists_recipient, err)
 
 			return err
 		}

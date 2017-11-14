@@ -175,7 +175,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 		err := controller.Db.RemoveRecipient(exists_recipient)
 
 		if err != nil {
-			log.Printf("error remove recipient: %v", exists_recipient)
+			log.Printf("error remove recipient: %v %s", exists_recipient, err)
 
 			return err
 		}
@@ -186,7 +186,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 	err := controller.Db.AddRecipient(recipient)
 
 	if err != nil {
-		log.Printf("error add recipient: %v", recipient)
+		log.Printf("error add recipient: %v %s", recipient, err)
 
 		return err
 	}
@@ -212,7 +212,7 @@ func (controller TelegramController) onUnSubscribe(chat_id int) error {
 		err := controller.Db.RemoveRecipient(exists_recipient)
 
 		if err != nil {
-			log.Printf("error remove recipient: %v", exists_recipient)
+			log.Printf("error remove recipient: %v %s", exists_recipient, err)
 
 			return err
 		}
