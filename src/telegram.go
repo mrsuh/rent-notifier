@@ -11,7 +11,12 @@ import (
 	"os"
 )
 
-func requestHandlerTelegram(ctx *fasthttp.RequestCtx, ctl controller.TelegramController) {
+func requestHandlerTelegram(ctx *fasthttp.RequestCtx, ctl controller.TelegramController, connection *dbal.Connection) {
+
+	session := connection.Session.Copy()
+	defer session.Close()
+
+	ctl.DB = &dbal.DBAL{DB: session.DB(connection.Database)}
 
 	switch string(ctx.Path()) {
 	case fmt.Sprintf("/telegram/%s/webhook", ctl.Prefix):
@@ -50,7 +55,8 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetPrefix("telegram ")
 
-	db := dbal.Connect(conf["database.dsn"].(string))
+	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
 
 	messages := make(chan model.Message)
 	telegram := model.Telegram{Token: conf["telegram.token"].(string)}
@@ -58,10 +64,10 @@ func main() {
 
 	log.Printf("server telegram run on %s", conf["telegram.listen"].(string))
 
-	ctl := controller.TelegramController{Db: db, Messages: messages, Prefix: conf["telegram.prefix"].(string)}
+	ctl := controller.TelegramController{Messages: messages, Prefix: conf["telegram.prefix"].(string)}
 
 	server_err := fasthttp.ListenAndServe(conf["telegram.listen"].(string), func(ctx *fasthttp.RequestCtx) {
-		requestHandlerTelegram(ctx, ctl)
+		requestHandlerTelegram(ctx, ctl, connection)
 	})
 
 	if server_err != nil {

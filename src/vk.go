@@ -11,7 +11,12 @@ import (
 	"os"
 )
 
-func requestHandlerVk(ctx *fasthttp.RequestCtx, ctl controller.VkController) {
+func requestHandlerVk(ctx *fasthttp.RequestCtx, ctl controller.VkController, connection *dbal.Connection) {
+
+	session := connection.Session.Copy()
+	defer session.Close()
+
+	ctl.DB = &dbal.DBAL{DB: session.DB(connection.Database)}
 
 	switch string(ctx.Path()) {
 	case fmt.Sprintf("/vk/%s/webhook", ctl.Prefix):
@@ -50,7 +55,8 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetPrefix("vk ")
 
-	db := dbal.Connect(conf["database.dsn"].(string))
+	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
 
 	messages := make(chan model.Message)
 	vk := model.Vk{Token: conf["vk.token"].(string)}
@@ -58,10 +64,10 @@ func main() {
 
 	log.Printf("server vk run on %s", conf["vk.listen"].(string))
 
-	ctl := controller.VkController{Db: db, Messages: messages, Prefix: conf["vk.prefix"].(string), ConfirmSecret: conf["vk.confirm_secret"].(string)}
+	ctl := controller.VkController{Messages: messages, Prefix: conf["vk.prefix"].(string), ConfirmSecret: conf["vk.confirm_secret"].(string)}
 
 	server_err := fasthttp.ListenAndServe(conf["vk.listen"].(string), func(ctx *fasthttp.RequestCtx) {
-		requestHandlerVk(ctx, ctl)
+		requestHandlerVk(ctx, ctl, connection)
 	})
 
 	if server_err != nil {

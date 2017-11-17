@@ -30,7 +30,7 @@ type VkObjectRequest struct {
 
 type VkController struct {
 	Messages chan model.Message
-	Db       *dbal.DBAL
+	DB       *dbal.DBAL
 	Prefix   string
 	ConfirmSecret string
 }
@@ -123,7 +123,16 @@ func (controller VkController) Parse(ctx *fasthttp.RequestCtx) error {
 func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 
 	city := dbal.City{}
-	for _, _city := range controller.Db.FindCities() {
+
+	cities, err := controller.DB.FindCities()
+
+	if err != nil {
+		log.Printf("error find cities: %s", err)
+
+		return err
+	}
+
+	for _, _city := range cities {
 		re := regexp.MustCompile(_city.Regexp)
 
 		if re.Match(byte_text) {
@@ -146,7 +155,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 	}
 
 	types := make([]int, 0)
-	for _, _type := range controller.Db.FindTypes() {
+	for _, _type := range controller.DB.FindTypes() {
 		re := regexp.MustCompile(_type.Regexp)
 
 		if re.Match(byte_text) {
@@ -167,8 +176,16 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 		return nil
 	}
 
+	subwaysByCity, err := controller.DB.FindSubwaysByCity(city)
+
+	if err != nil {
+		log.Printf("error find subways by city: %s", err)
+
+		return err
+	}
+
 	subways := make([]int, 0)
-	for _, _subway := range controller.Db.FindSubwaysByCity(city) {
+	for _, _subway := range subwaysByCity {
 		re := regexp.MustCompile(_subway.Regexp)
 
 		if re.Match(byte_text) {
@@ -180,8 +197,16 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 		log.Println("no subways")
 	}
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_VK) {
-		err := controller.Db.RemoveRecipient(exists_recipient)
+	exists_recipients, err := controller.DB.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_VK)
+
+	if err != nil {
+		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+
+		return err
+	}
+
+	for _, exists_recipient := range exists_recipients {
+		err := controller.DB.RemoveRecipient(exists_recipient)
 
 		if err != nil {
 			log.Printf("error remove recipient: %v %s", exists_recipient, err)
@@ -192,7 +217,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 
 	recipient := dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_VK, City: city.Id, Subways: subways, Types: types}
 
-	err := controller.Db.AddRecipient(recipient)
+	err = controller.DB.AddRecipient(recipient)
 
 	if err != nil {
 		log.Printf("error add recipient: %v %s", recipient, err)
@@ -206,7 +231,7 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 	b.WriteString(fmt.Sprintf("Тип: %s\n", model.FormatTypes(recipient.Types)))
 	b.WriteString(fmt.Sprintf("Город: %s\n", city.Name))
 	if city.HasSubway && len(recipient.Subways) > 0 {
-		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
+		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.DB, recipient.Subways)))
 	}
 	b.WriteString("Вы получите новые объявления как только они появятся.\n")
 
@@ -215,10 +240,18 @@ func (controller VkController) onSubscribe(chatId int, byte_text []byte) error {
 	return nil
 }
 
-func (controller VkController) onUnSubscribe(chat_id int) error {
+func (controller VkController) onUnSubscribe(chatId int) error {
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chat_id, dbal.RECIPIENT_VK) {
-		err := controller.Db.RemoveRecipient(exists_recipient)
+	exists_recipients, err := controller.DB.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_VK)
+
+	if err != nil {
+		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+
+		return err
+	}
+
+	for _, exists_recipient := range exists_recipients {
+		err := controller.DB.RemoveRecipient(exists_recipient)
 
 		if err != nil {
 			log.Printf("error remove recipient: %v %s", exists_recipient, err)
@@ -227,7 +260,7 @@ func (controller VkController) onUnSubscribe(chat_id int) error {
 		}
 	}
 
-	controller.Messages <- model.Message{ChatId: chat_id, Text: "Вы успешно отменили подписку"}
+	controller.Messages <- model.Message{ChatId: chatId, Text: "Вы успешно отменили подписку"}
 
 	return nil
 }
@@ -271,8 +304,16 @@ func (controller VkController) onHelp(chat_id int) {
 }
 
 func (controller VkController) onCity(chat_id int) {
+	citiesAll, err := controller.DB.FindCities()
+
+	if err != nil {
+		log.Printf("error find all cities: %s", err)
+
+		return
+	}
+
 	cities := make([]string, 0)
-	for _, city := range controller.Db.FindCities() {
+	for _, city := range citiesAll {
 		cities = append(cities, city.Name)
 	}
 
