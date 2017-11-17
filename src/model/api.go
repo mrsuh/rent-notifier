@@ -5,6 +5,7 @@ import (
 	"rent-notifier/src/db"
 	"strings"
 	"strconv"
+	"log"
 )
 
 func FormatType(note_type int) string {
@@ -45,10 +46,16 @@ func FormatPrice(price int) string {
 	return priceStr
 }
 
-func FormatSubways(db *dbal.DBAL, subway_ids []int) string {
+func FormatSubways(db *dbal.DBAL, subwayIds []int) string {
+
+	subwaysByIds, err := db.FindSubwaysByIds(subwayIds)
+
+	if err != nil {
+		log.Printf("error find subways by ids: %s", err)
+	}
 
 	subways := make([]string, 0)
-	for _, subway := range db.FindSubwaysByIds(subway_ids) {
+	for _, subway := range subwaysByIds {
 		subways = append(subways, subway.Name)
 	}
 

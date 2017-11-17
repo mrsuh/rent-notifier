@@ -50,73 +50,72 @@ type Note struct {
 }
 
 type DBAL struct {
-	session *mgo.Session
-	db      *mgo.Database
+	DB      *mgo.Database
 	cities []City
 }
 
 func (dbal *DBAL) AddRecipient(recipient Recipient) error {
 	recipient.Id = bson.NewObjectId()
-	return dbal.db.C("recipients").Insert(&recipient)
+	return dbal.DB.C("recipients").Insert(&recipient)
 }
 
 func (dbal *DBAL) RemoveRecipient(recipient Recipient) error {
-	return dbal.db.C("recipients").Remove(bson.M{"chat_id": recipient.ChatId, "chat_type": recipient.ChatType})
+	return dbal.DB.C("recipients").Remove(bson.M{"chat_id": recipient.ChatId, "chat_type": recipient.ChatType})
 }
 
-func (dbal *DBAL) FindRecipientsByChatIdAndChatType(chatId int, chatType string) []Recipient {
+func (dbal *DBAL) FindRecipientsByChatIdAndChatType(chatId int, chatType string) ([]Recipient, error) {
 	result := []Recipient{}
-	dbal.db.C("recipients").Find(bson.M{"chat_id": chatId, "chat_type": chatType}).All(&result)
+	err := dbal.DB.C("recipients").Find(bson.M{"chat_id": chatId, "chat_type": chatType}).All(&result)
 
-	return result
+	return result, err
 }
 
-func (dbal *DBAL) FindRecipientsByNote(note Note) []Recipient {
+func (dbal *DBAL) FindRecipientsByNote(note Note) ([]Recipient, error) {
 	result := []Recipient{}
 
 	conditions := make([]bson.M, 0)
 	conditions = append(conditions, bson.M{"city": note.City, "subways": bson.M{"$in": note.Subways}, "types": note.Type})
 	conditions = append(conditions, bson.M{"city": note.City, "subways": bson.M{"$size": 0}, "types": note.Type})
 
-	dbal.db.C("recipients").Find(bson.M{"$or": conditions}).All(&result)
+	err := dbal.DB.C("recipients").Find(bson.M{"$or": conditions}).All(&result)
 
-	return result
+	return result, err
 }
 
 func (dbal *DBAL) AddCity(city City) error {
-	return dbal.db.C("cities").Insert(&city)
+	return dbal.DB.C("cities").Insert(&city)
 }
 
-func (dbal *DBAL) FindCities() []City {
+func (dbal *DBAL) FindCities() ([]City, error) {
 	result := []City{}
 
 	if len(dbal.cities) > 0 {
-		return dbal.cities
+		return dbal.cities, nil
 	}
 
-	dbal.db.C("cities").Find(bson.M{}).All(&result)
+	err := dbal.DB.C("cities").Find(bson.M{}).All(&result)
 
 	dbal.cities = result
 
-	return result
+	return result, err
 }
 
 func (dbal *DBAL) AddSubway(subway Subway) error {
-	return dbal.db.C("subways").Insert(&subway)
+	return dbal.DB.C("subways").Insert(&subway)
 }
 
-func (dbal *DBAL) FindSubwaysByCity(city City) []Subway {
+func (dbal *DBAL) FindSubwaysByCity(city City) ([]Subway, error) {
 	result := []Subway{}
-	dbal.db.C("subways").Find(bson.M{"city": city.Id}).All(&result)
+	err := dbal.DB.C("subways").Find(bson.M{"city": city.Id}).All(&result)
 
-	return result
+	return result, err
 }
 
-func (dbal *DBAL) FindSubwaysByIds(ids []int) []Subway {
+func (dbal *DBAL) FindSubwaysByIds(ids []int) ([]Subway, error) {
 	result := []Subway{}
-	dbal.db.C("subways").Find(bson.M{"_id": bson.M{"$in": ids}}).All(&result)
+	err := dbal.DB.C("subways").Find(bson.M{"_id": bson.M{"$in": ids}}).All(&result)
 
-	return result
+	return result, err
 }
 
 func (dbal *DBAL) FindTypes() []Type {
@@ -130,17 +129,4 @@ func (dbal *DBAL) FindTypes() []Type {
 	result = append(result, Type{Id: 5, Regexp: "студи|квартир"})
 
 	return result
-}
-
-func Connect(dsn string) *DBAL {
-	session, err := mgo.Dial(dsn)
-	if err != nil {
-		panic(err)
-	}
-
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-	session.SetSafe(&mgo.Safe{})
-
-	return &DBAL{session: session, db: session.DB("rent-notifier")}
 }

@@ -21,7 +21,10 @@ func connectDb() *dbal.DBAL {
 
 	conf := conf_instance.Get()
 
-	return dbal.Connect(conf["database.dsn"].(string))
+	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
+
+	return &dbal.DBAL{DB: connection.Session.DB(connection.Database)}
 }
 
 func loadCities(db *dbal.DBAL, path string) {

@@ -13,7 +13,7 @@ import (
 type ApiController struct {
 	TelegramMessages chan model.Message
 	VkMessages chan model.Message
-	Db       *dbal.DBAL
+	DB       *dbal.DBAL
 	Prefix   string
 }
 
@@ -38,8 +38,14 @@ func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 
 	log.Printf("notify note {city: %d, type: %d, contact: %s, link: %s}", note.City, note.Type, note.Contact, note.Link)
 
+	recipients, err := controller.DB.FindRecipientsByNote(note)
+
+	if err != nil {
+		log.Printf("error find recipients by note: %s", err)
+	}
+
 	vkIds := make([]int, 0)
-	for _, recipient := range controller.Db.FindRecipientsByNote(note) {
+	for _, recipient := range recipients {
 
 		switch(recipient.ChatType) {
 		case dbal.RECIPIENT_TELEGRAM:
@@ -78,7 +84,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 	}
 
 	if len(note.Subways) > 0 {
-		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.Db, note.Subways)))
+		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.DB, note.Subways)))
 	}
 
 	b.WriteString(fmt.Sprintf("<b>Ссылка</b>: <a href='%s'>Перейти к объявлению</a>\n\n", note.Link))
@@ -97,7 +103,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 	}
 
 	if len(note.Subways) > 0 {
-		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.Db, note.Subways)))
+		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.DB, note.Subways)))
 	}
 
 	b.WriteString(fmt.Sprintf("Ссылка: %s\n\n", note.Link))

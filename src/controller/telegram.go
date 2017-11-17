@@ -33,7 +33,7 @@ type TelegramMessageResponse struct {
 
 type TelegramController struct {
 	Messages chan model.Message
-	Db       *dbal.DBAL
+	DB       *dbal.DBAL
 	Prefix   string
 }
 
@@ -113,8 +113,14 @@ func (controller TelegramController) Parse(ctx *fasthttp.RequestCtx) error {
 
 func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) error {
 
+	cities, err := controller.DB.FindCities()
+
+	if err != nil {
+		log.Printf("error find cities: %s", err)
+	}
+
 	city := dbal.City{}
-	for _, _city := range controller.Db.FindCities() {
+	for _, _city := range cities {
 		re := regexp.MustCompile(_city.Regexp)
 
 		if re.Match(byte_text) {
@@ -137,7 +143,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 	}
 
 	types := make([]int, 0)
-	for _, _type := range controller.Db.FindTypes() {
+	for _, _type := range controller.DB.FindTypes() {
 		re := regexp.MustCompile(_type.Regexp)
 
 		if re.Match(byte_text) {
@@ -159,7 +165,14 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 	}
 
 	subways := make([]int, 0)
-	for _, _subway := range controller.Db.FindSubwaysByCity(city) {
+
+	subwaysByCity, err := controller.DB.FindSubwaysByCity(city)
+
+	if err != nil {
+		log.Printf("error find subways by city: %s", err)
+	}
+
+	for _, _subway := range subwaysByCity {
 		re := regexp.MustCompile(_subway.Regexp)
 
 		if re.Match(byte_text) {
@@ -171,8 +184,14 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 		log.Println("no subways")
 	}
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_TELEGRAM) {
-		err := controller.Db.RemoveRecipient(exists_recipient)
+	exists_recipients, err := controller.DB.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_TELEGRAM)
+
+	if err != nil {
+		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+	}
+
+	for _, exists_recipient := range exists_recipients {
+		err := controller.DB.RemoveRecipient(exists_recipient)
 
 		if err != nil {
 			log.Printf("error remove recipient: %v %s", exists_recipient, err)
@@ -183,7 +202,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 
 	recipient := dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_TELEGRAM, City: city.Id, Subways: subways, Types: types}
 
-	err := controller.Db.AddRecipient(recipient)
+	err = controller.DB.AddRecipient(recipient)
 
 	if err != nil {
 		log.Printf("error add recipient: %v %s", recipient, err)
@@ -197,7 +216,7 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 	b.WriteString(fmt.Sprintf("<b>Тип</b>: %s\n", model.FormatTypes(recipient.Types)))
 	b.WriteString(fmt.Sprintf("<b>Город</b>: %s\n", city.Name))
 	if city.HasSubway && len(recipient.Subways) > 0 {
-		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.Db, recipient.Subways)))
+		b.WriteString(fmt.Sprintf("<b>Метро</b>: %s\n", model.FormatSubways(controller.DB, recipient.Subways)))
 	}
 	b.WriteString("Вы получите новые объявления как только они появятся.\n")
 
@@ -206,10 +225,16 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 	return nil
 }
 
-func (controller TelegramController) onUnSubscribe(chat_id int) error {
+func (controller TelegramController) onUnSubscribe(chatId int) error {
 
-	for _, exists_recipient := range controller.Db.FindRecipientsByChatIdAndChatType(chat_id, dbal.RECIPIENT_TELEGRAM) {
-		err := controller.Db.RemoveRecipient(exists_recipient)
+	exists_recipients, err := controller.DB.FindRecipientsByChatIdAndChatType(chatId, dbal.RECIPIENT_TELEGRAM)
+
+	if err != nil {
+		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+	}
+
+	for _, exists_recipient := range exists_recipients {
+		err := controller.DB.RemoveRecipient(exists_recipient)
 
 		if err != nil {
 			log.Printf("error remove recipient: %v %s", exists_recipient, err)
@@ -218,7 +243,7 @@ func (controller TelegramController) onUnSubscribe(chat_id int) error {
 		}
 	}
 
-	controller.Messages <- model.Message{ChatId: chat_id, Text: "Вы успешно отменили подписку"}
+	controller.Messages <- model.Message{ChatId: chatId, Text: "Вы успешно отменили подписку"}
 
 	return nil
 }
@@ -262,8 +287,14 @@ func (controller TelegramController) onHelp(chat_id int) {
 }
 
 func (controller TelegramController) onCity(chat_id int) {
+	citiesAll, err := controller.DB.FindCities()
+
+	if err != nil {
+		log.Printf("error find all cities: %s", err)
+	}
+
 	cities := make([]string, 0)
-	for _, city := range controller.Db.FindCities() {
+	for _, city := range citiesAll {
 		cities = append(cities, city.Name)
 	}
 	controller.Messages <- model.Message{ChatId: chat_id, Text: fmt.Sprintf("Список доступных городов:\n\n%s", strings.Join(cities, "\n"))}

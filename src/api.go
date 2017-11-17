@@ -11,7 +11,12 @@ import (
 	"os"
 )
 
-func requestHandlerApi(ctx *fasthttp.RequestCtx, ctl controller.ApiController) {
+func requestHandlerApi(ctx *fasthttp.RequestCtx, ctl controller.ApiController, connection *dbal.Connection) {
+
+	session := connection.Session.Copy()
+	defer session.Close()
+
+	ctl.DB = &dbal.DBAL{DB: session.DB(connection.Database)}
 
 	switch string(ctx.Path()) {
 
@@ -33,7 +38,6 @@ func requestHandlerApi(ctx *fasthttp.RequestCtx, ctl controller.ApiController) {
 func main() {
 
 	confInstance := config.GetInstance()
-
 	err := confInstance.Init()
 
 	if err != nil {
@@ -42,7 +46,7 @@ func main() {
 
 	conf := confInstance.Get()
 
-	db := dbal.Connect(conf["database.dsn"].(string))
+	connection := dbal.NewConnection(conf["database.dsn"].(string))
 
 	logFile, err := os.OpenFile(conf["log.file"].(string), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
@@ -63,10 +67,10 @@ func main() {
 
 	log.Printf("server run on %s", conf["api.listen"].(string))
 
-	ctl := controller.ApiController{Db: db, TelegramMessages: telegramMessages, VkMessages: vkMessages, Prefix: conf["api.prefix"].(string)}
+	ctl := controller.ApiController{TelegramMessages: telegramMessages, VkMessages: vkMessages, Prefix: conf["api.prefix"].(string)}
 
 	serverErr := fasthttp.ListenAndServe(conf["api.listen"].(string), func(ctx *fasthttp.RequestCtx) {
-		requestHandlerApi(ctx, ctl)
+		requestHandlerApi(ctx, ctl, connection)
 	})
 
 	if serverErr != nil {
