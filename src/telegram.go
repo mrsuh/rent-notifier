@@ -56,6 +56,7 @@ func main() {
 	log.SetPrefix("telegram ")
 
 	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
 
 	messages := make(chan model.Message)
 	telegram := model.Telegram{Token: conf["telegram.token"].(string)}

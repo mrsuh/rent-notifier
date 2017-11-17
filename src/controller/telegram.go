@@ -117,6 +117,8 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 
 	if err != nil {
 		log.Printf("error find cities: %s", err)
+
+		return err
 	}
 
 	city := dbal.City{}
@@ -170,6 +172,8 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 
 	if err != nil {
 		log.Printf("error find subways by city: %s", err)
+
+		return err
 	}
 
 	for _, _subway := range subwaysByCity {
@@ -188,6 +192,8 @@ func (controller TelegramController) onSubscribe(chatId int, byte_text []byte) e
 
 	if err != nil {
 		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+
+		return err
 	}
 
 	for _, exists_recipient := range exists_recipients {
@@ -231,6 +237,8 @@ func (controller TelegramController) onUnSubscribe(chatId int) error {
 
 	if err != nil {
 		log.Printf("error find recipients by chat_id and chat_type: %s", err)
+
+		return err
 	}
 
 	for _, exists_recipient := range exists_recipients {
@@ -291,6 +299,8 @@ func (controller TelegramController) onCity(chat_id int) {
 
 	if err != nil {
 		log.Printf("error find all cities: %s", err)
+
+		return
 	}
 
 	cities := make([]string, 0)

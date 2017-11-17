@@ -47,6 +47,7 @@ func main() {
 	conf := confInstance.Get()
 
 	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
 
 	logFile, err := os.OpenFile(conf["log.file"].(string), os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {

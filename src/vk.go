@@ -56,6 +56,7 @@ func main() {
 	log.SetPrefix("vk ")
 
 	connection := dbal.NewConnection(conf["database.dsn"].(string))
+	defer connection.Session.Close()
 
 	messages := make(chan model.Message)
 	vk := model.Vk{Token: conf["vk.token"].(string)}

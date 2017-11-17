@@ -52,6 +52,8 @@ func FormatSubways(db *dbal.DBAL, subwayIds []int) string {
 
 	if err != nil {
 		log.Printf("error find subways by ids: %s", err)
+
+		return ""
 	}
 
 	subways := make([]string, 0)

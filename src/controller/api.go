@@ -42,6 +42,8 @@ func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 
 	if err != nil {
 		log.Printf("error find recipients by note: %s", err)
+
+		return err
 	}
 
 	vkIds := make([]int, 0)
