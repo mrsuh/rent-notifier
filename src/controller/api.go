@@ -108,7 +108,13 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 		b.WriteString(fmt.Sprintf("Метро: %s\n", model.FormatSubways(controller.DB, note.Subways)))
 	}
 
-	b.WriteString(fmt.Sprintf("Ссылка: %s\n\n", note.Link))
+	b.WriteString(fmt.Sprintf("Ссылка: %s\n", note.Link))
+
+	if note.Source == dbal.NOTE_VK_COMMENT {
+		b.WriteString("Эта ссылка открывается верно только в браузере\n")
+	}  else {
+		b.WriteString("\n")
+	}
 
 	return b.String()
 }

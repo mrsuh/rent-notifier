@@ -38,6 +38,12 @@ type Recipient struct {
 	Types    []int         `bson:"types"`
 }
 
+const (
+	NOTE_VK_COMMENT = `vk.com:comment`
+	NOTE_VK_WALL    = `vk.com:wall`
+	NOTE_AVITO      = `avito.ru`
+)
+
 type Note struct {
 	Subways     []int    `json:"subways"`
 	Description string   `json:"description"`
@@ -47,10 +53,11 @@ type Note struct {
 	Photos      []string `json:"photos"`
 	City        int      `json:"city"`
 	Contact     string   `json:"contact"`
+	Source      string   `json:"source"`
 }
 
 type DBAL struct {
-	DB      *mgo.Database
+	DB     *mgo.Database
 	cities []City
 }
 
