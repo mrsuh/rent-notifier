@@ -59,7 +59,7 @@ func main() {
 	defer connection.Session.Close()
 
 	messages := make(chan model.Message)
-	vk := model.Vk{Token: conf["vk.token"].(string)}
+	vk := model.Vk{Token: conf["vk.token"].(string), Connection: connection}
 	go vk.SendMessage(messages)
 
 	log.Printf("server vk run on %s", conf["vk.listen"].(string))

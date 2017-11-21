@@ -5,8 +5,8 @@ import (
 )
 
 type Connection struct {
-	Session *mgo.Session
-	Database     string
+	Session  *mgo.Session
+	Database string
 }
 
 func NewConnection(dsn string) *Connection {
