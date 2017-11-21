@@ -14,7 +14,7 @@ import (
 )
 
 type Vk struct {
-	Token string
+	Token      string
 	Connection *dbal.Connection
 }
 
@@ -48,7 +48,7 @@ func (vk *Vk) SendMessage(messages chan Message) {
 
 		if nil != err {
 
-			bodyBytes,_ := ioutil.ReadAll(resp.Body)
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
 			bodyResponse := controller.VkBodyResponse{}
 			err = json.Unmarshal(bodyBytes, &bodyResponse)
@@ -64,7 +64,7 @@ func (vk *Vk) SendMessage(messages chan Message) {
 			log.Printf("request err {form: %v, err: %s}", form, err)
 		}
 
-		bodyBytes,_ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
 		log.Printf("response: %s", string(bodyBytes))
 
 		time.Sleep(50 * time.Millisecond) //20 rps
@@ -98,7 +98,7 @@ func (vk *Vk) RemoveInvalidRecipients(message Message) {
 
 		if nil != err {
 
-			bodyBytes,_ := ioutil.ReadAll(resp.Body)
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
 			bodyResponse := controller.VkBodyResponse{}
 			err = json.Unmarshal(bodyBytes, &bodyResponse)
@@ -108,7 +108,7 @@ func (vk *Vk) RemoveInvalidRecipients(message Message) {
 			}
 
 			if bodyResponse.Error.Code == 901 {
-				err = db.RemoveRecipient(dbal.Recipient{ChatId:chatId, ChatType: dbal.RECIPIENT_VK})
+				err = db.RemoveRecipient(dbal.Recipient{ChatId: chatId, ChatType: dbal.RECIPIENT_VK})
 
 				if err != nil {
 					log.Printf("remove recipient err: %s", err)

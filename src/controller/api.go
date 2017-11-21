@@ -12,9 +12,9 @@ import (
 
 type ApiController struct {
 	TelegramMessages chan model.Message
-	VkMessages chan model.Message
-	DB       *dbal.DBAL
-	Prefix   string
+	VkMessages       chan model.Message
+	DB               *dbal.DBAL
+	Prefix           string
 }
 
 func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
@@ -75,7 +75,7 @@ func (controller ApiController) Notify(ctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
-func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
+func (controller ApiController) formatMessageTelegram(note dbal.Note) string {
 
 	var b bytes.Buffer
 
@@ -94,7 +94,7 @@ func (controller ApiController) formatMessageTelegram (note dbal.Note) string {
 	return b.String()
 }
 
-func (controller ApiController) formatMessageVk (note dbal.Note) string {
+func (controller ApiController) formatMessageVk(note dbal.Note) string {
 
 	var b bytes.Buffer
 
@@ -112,7 +112,7 @@ func (controller ApiController) formatMessageVk (note dbal.Note) string {
 
 	if note.Source == dbal.NOTE_VK_COMMENT {
 		b.WriteString("Эта ссылка открывается верно только в браузере\n")
-	}  else {
+	} else {
 		b.WriteString("\n")
 	}
 

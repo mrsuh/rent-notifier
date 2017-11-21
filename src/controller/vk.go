@@ -29,18 +29,18 @@ type VkObjectRequest struct {
 }
 
 type VkBodyResponse struct {
-	Error      VkErrorObject    `json:"error"`
+	Error VkErrorObject `json:"error"`
 }
 
 type VkErrorObject struct {
-	Code      int    `json:"error_code"`
-	Message       string    `json:"error_msg"`
+	Code    int    `json:"error_code"`
+	Message string `json:"error_msg"`
 }
 
 type VkController struct {
-	Messages chan model.Message
-	DB       *dbal.DBAL
-	Prefix   string
+	Messages      chan model.Message
+	DB            *dbal.DBAL
+	Prefix        string
 	ConfirmSecret string
 }
 
