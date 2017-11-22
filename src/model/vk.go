@@ -90,7 +90,7 @@ func (vk *Vk) RemoveInvalidRecipients(message Message) {
 
 	db := &dbal.DBAL{DB: session.DB(vk.Connection.Database)}
 
-	for chatId := range recipientIds {
+	for _,chatId := range recipientIds {
 		form := url.Values{}
 
 		form.Add("user_id", strconv.Itoa(chatId))
