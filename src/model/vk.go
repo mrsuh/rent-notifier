@@ -57,8 +57,11 @@ func (vk *Vk) SendMessage(messages chan Message) {
 		bodyResponse := controller.VkBodyResponse{}
 		err = json.Unmarshal(bodyBytes, &bodyResponse)
 
+		log.Println(bodyResponse)
+
 		if err == nil && bodyResponse.Error.Code == 901 {
 
+			log.Println("RemoveInvalidRecipients")
 			vk.RemoveInvalidRecipients(message)
 		}
 
