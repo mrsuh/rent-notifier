@@ -28,15 +28,6 @@ type VkObjectRequest struct {
 	Body      string `json:"body"`
 }
 
-type VkBodyResponse struct {
-	Error VkErrorObject `json:"error"`
-}
-
-type VkErrorObject struct {
-	Code    int    `json:"error_code"`
-	Message string `json:"error_msg"`
-}
-
 type VkController struct {
 	Messages      chan model.Message
 	DB            *dbal.DBAL

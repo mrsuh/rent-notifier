@@ -9,13 +9,21 @@ import (
 	"log"
 	"io/ioutil"
 	"encoding/json"
-	"rent-notifier/src/controller"
 	"rent-notifier/src/db"
 )
 
 type Vk struct {
 	Token      string
 	Connection *dbal.Connection
+}
+
+type VkBodyResponse struct {
+	Error VkErrorObject `json:"error"`
+}
+
+type VkErrorObject struct {
+	Code    int    `json:"error_code"`
+	Message string `json:"error_msg"`
 }
 
 const VK_URL = "https://api.vk.com/method/messages.send"
@@ -54,10 +62,8 @@ func (vk *Vk) SendMessage(messages chan Message) {
 
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
-		bodyResponse := controller.VkBodyResponse{}
+		bodyResponse := VkBodyResponse{}
 		err = json.Unmarshal(bodyBytes, &bodyResponse)
-
-		log.Println(err, bodyResponse)
 
 		if err == nil && bodyResponse.Error.Code == 901 {
 
@@ -104,7 +110,7 @@ func (vk *Vk) RemoveInvalidRecipients(message Message) {
 
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
-		bodyResponse := controller.VkBodyResponse{}
+		bodyResponse := VkBodyResponse{}
 		err = json.Unmarshal(bodyBytes, &bodyResponse)
 
 		if err == nil && bodyResponse.Error.Code == 901 {
