@@ -63,7 +63,7 @@ func main() {
 	go telegram.SendMessage(telegramMessages)
 
 	vkMessages := make(chan model.Message)
-	vk := model.Vk{Token: conf["vk.token"].(string)}
+	vk := model.Vk{Token: conf["vk.token"].(string), Connection: connection}
 	go vk.SendMessage(vkMessages)
 
 	log.Printf("server run on %s", conf["api.listen"].(string))
