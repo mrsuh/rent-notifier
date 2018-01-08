@@ -1,5 +1,7 @@
 # Rent notifier
 
+![Screen](/screen.png)
+
 ## Installation
 ```
 sh bin/deploy.sh
